@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "preLaunchTask": "rust: cargo build",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "name": "Debug",
+            "flashingConfig": {
+                "flashingEnabled": true,
+            },
+            "chip": "STM32F072VBTx",
+            "coreConfigs": [
+                {
+                    "programBinary": "target/thumbv6m-none-eabi/debug/apus-rs",
+                    "rttEnabled": true,
+                    "svdFile": "device/STM32F0x2.svd"
+                },
+            ]
+        }
+    ]
+}
