@@ -1,34 +1,44 @@
 #![no_std]
 #![no_main]
 
-use cortex_m::asm::nop;
+use cortex_m::asm::delay;
 use cortex_m_rt::entry;
 use panic_halt as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use core::fmt::Write;
-use cortex_m_semihosting::hio;
+use crate::bsp::leds::led::LedLike;
+use stm32f0xx_hal::{pac, prelude::*};
 
-// printing with semihosting
-fn print() -> Result<(), core::fmt::Error> {
-    let mut stdout = hio::hstdout().map_err(|_| core::fmt::Error)?;
-    let language = "Rust";
-    let ranking = 1;
-
-    write!(stdout, "{} on embedded is #{}!\n", language, ranking)?;
-
-    Ok(())
-}
+mod bsp;
+use bsp::leds::Leds;
 
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
     rprintln!("Hello World!");
 
+    let mut dp = pac::Peripherals::take().unwrap();
+    let mut rcc = dp.RCC.configure().freeze(&mut dp.FLASH);
+    let gpioc = dp.GPIOC.split(&mut rcc);
+    let mut leds = Leds::new(gpioc);
+
+    for led in leds.all_mut().iter_mut() {
+        led.off();
+    }
+
     loop {
         rprintln!("Echo...");
-        for _ in 0..10_000 {
-            nop();
-        }
+
+        leds.led3.on();
+        leds.led4.on();
+        leds.led5.on();
+
+        delay(5_000_000);
+
+        leds.led3.off();
+        leds.led4.off();
+        leds.led5.off();
+
+        delay(5_000_000);
     }
 }

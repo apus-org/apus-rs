@@ -14,7 +14,7 @@
                 {
                     "programBinary": "target/thumbv6m-none-eabi/debug/apus-rs",
                     "rttEnabled": true,
-                    "svdFile": "device/STM32F0x2.svd"
+                    "svdFile": "device/STM32F0x2.svd",
                 },
             ]
         }
