@@ -1,41 +1,69 @@
-use mipidsi::interface::{Generic8BitBus, ParallelInterface};
-use mipidsi::Display;
-
-use mipidsi::{models::ST7789, Builder};
-
-use embedded_graphics::{pixelcolor::Rgb565, prelude::*};
-
-use embedded_hal_compat::ForwardCompat;
-
 use cortex_m::interrupt;
-use embedded_hal::digital::v2::OutputPin;
-use stm32f0xx_hal::pac;
+use embedded_graphics::prelude::RgbColor;
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb565};
+use embedded_hal_compat::{markers::ForwardOutputPin, Forward, ForwardCompat};
+use mipidsi::interface::{Generic8BitBus, ParallelInterface};
+use mipidsi::{models::ST7789, Builder};
+use stm32f0xx_hal::gpio::{gpioe, gpiof, Floating, Input, Output, PushPull};
+use stm32f0xx_hal::prelude::_embedded_hal_gpio_OutputPin;
 
-// Display
-const H: i32 = 320;
-const W: i32 = 240;
+/// Display dimensions
+pub const DISPLAY_WIDTH: u16 = 240;
+pub const DISPLAY_HEIGHT: u16 = 320;
 
-pub fn make_display(
-    gpioe: stm32f0xx_hal::gpio::gpioe::Parts,
-    gpiof: stm32f0xx_hal::gpio::gpiof::Parts,
-    core: pac::CorePeripherals,
-    rcc: &mut stm32f0xx_hal::rcc::Rcc,
-) -> impl embedded_graphics::prelude::DrawTarget<Color = Rgb565> {
-    interrupt::free(|cs| {
-        let db0 = gpioe.pe0.into_push_pull_output(cs);
-        let db1 = gpioe.pe1.into_push_pull_output(cs);
-        let db2 = gpioe.pe2.into_push_pull_output(cs);
-        let db3 = gpioe.pe3.into_push_pull_output(cs);
-        let db4 = gpioe.pe4.into_push_pull_output(cs);
-        let db5 = gpioe.pe5.into_push_pull_output(cs);
-        let db6 = gpioe.pe6.into_push_pull_output(cs);
-        let db7 = gpioe.pe7.into_push_pull_output(cs);
+type ApusDisplay = mipidsi::Display<
+    ParallelInterface<
+        Generic8BitBus<
+            Forward<gpioe::PE0<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE1<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE2<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE3<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE4<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE5<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE6<Output<PushPull>>, ForwardOutputPin>,
+            Forward<gpioe::PE7<Output<PushPull>>, ForwardOutputPin>,
+        >,
+        Forward<gpioe::PE9<Output<PushPull>>, ForwardOutputPin>,
+        Forward<gpioe::PE10<Output<PushPull>>, ForwardOutputPin>,
+    >,
+    ST7789,
+    Forward<gpiof::PF10<Output<PushPull>>, ForwardOutputPin>,
+>;
 
-        let dc = gpioe.pe9.into_push_pull_output(cs);
-        let wr = gpioe.pe10.into_push_pull_output(cs);
-        let rst = gpiof.pf10.into_push_pull_output(cs);
+pub struct ApusDisplayPins {
+    pub db0: gpioe::PE0<Input<Floating>>,
+    pub db1: gpioe::PE1<Input<Floating>>,
+    pub db2: gpioe::PE2<Input<Floating>>,
+    pub db3: gpioe::PE3<Input<Floating>>,
+    pub db4: gpioe::PE4<Input<Floating>>,
+    pub db5: gpioe::PE5<Input<Floating>>,
+    pub db6: gpioe::PE6<Input<Floating>>,
+    pub db7: gpioe::PE7<Input<Floating>>,
+    pub n_cs: gpioe::PE8<Input<Floating>>,
+    pub d_c: gpioe::PE9<Input<Floating>>,
+    pub w_r: gpioe::PE10<Input<Floating>>,
+    pub n_reset: gpiof::PF10<Input<Floating>>,
+}
+
+/// Initialize the ST7789 display
+pub fn display_init(pins: ApusDisplayPins, delay: cortex_m::delay::Delay) -> ApusDisplay {
+    let (data_interface, n_reset, mut n_chip_select) = interrupt::free(|cs| {
+        let db0 = pins.db0.into_push_pull_output(cs);
+        let db1 = pins.db1.into_push_pull_output(cs);
+        let db2 = pins.db2.into_push_pull_output(cs);
+        let db3 = pins.db3.into_push_pull_output(cs);
+        let db4 = pins.db4.into_push_pull_output(cs);
+        let db5 = pins.db5.into_push_pull_output(cs);
+        let db6 = pins.db6.into_push_pull_output(cs);
+        let db7 = pins.db7.into_push_pull_output(cs);
+
+        let n_cs = pins.n_cs.into_push_pull_output(cs);
+        let d_c = pins.d_c.into_push_pull_output(cs);
+        let w_r = pins.w_r.into_push_pull_output(cs);
+        let n_reset = pins.n_reset.into_push_pull_output(cs);
 
         let bus = Generic8BitBus::new((
+            // forward compatability for embedded-hal
             db0.forward(),
             db1.forward(),
             db2.forward(),
@@ -46,15 +74,21 @@ pub fn make_display(
             db7.forward(),
         ));
 
-        let di = ParallelInterface::new(bus, dc.forward(), wr.forward());
-        let mut delay = cortex_m::delay::Delay::new(core.SYST, rcc.clocks.sysclk().0);
+        let di = ParallelInterface::new(bus, d_c.forward(), w_r.forward());
+        (di, n_reset, n_cs)
+    });
 
-        Builder::new(ST7789, di)
-            .reset_pin(rst.forward())
-            .color_order(mipidsi::options::ColorOrder::Rgb)
-            .display_size(W as u16, H as u16)
-            // .orientation(orientation)
-            .init(&mut delay.forward())
-            .unwrap()
-    })
+    // Enable display chip select (low active)
+    let _ = n_chip_select.set_low();
+
+    let mut display = Builder::new(ST7789, data_interface)
+        .reset_pin(n_reset.forward())
+        .display_size(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        .init(&mut delay.forward())
+        .unwrap();
+
+    // Clear display
+    let _ = display.clear(Rgb565::BLACK);
+
+    display
 }
