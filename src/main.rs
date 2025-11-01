@@ -14,10 +14,7 @@ use embedded_graphics::{
 use panic_halt as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use crate::bsp::{
-    display::{display_init, ApusDisplayPins},
-    leds::led::LedLike,
-};
+use crate::bsp::display::{display_init, ApusDisplayPins};
 use stm32f0xx_hal::{pac, prelude::*};
 
 mod bsp;
@@ -69,20 +66,14 @@ fn main() -> ! {
     let _ = display.clear(Rgb565::BLACK);
 
     // led construction
-    let mut leds = Leds::new(gpioc);
-
-    // led clear
-    for led in leds.all_mut().iter_mut() {
-        led.off();
-    }
+    let mut leds = Leds::new(
+        gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
+    );
 
     // main loop
     loop {
-        rprintln!("Echo...");
+        leds.main_leds_mut().iter_mut().for_each(|led| led.on());
 
-        leds.led3.on();
-        leds.led4.on();
-        leds.led5.on();
         let _ = display.fill_solid(
             &Rectangle::new(
                 Point::new(0, 0),
@@ -93,9 +84,7 @@ fn main() -> ! {
 
         delay(sys_clock_hz / 2);
 
-        leds.led3.off();
-        leds.led4.off();
-        leds.led5.off();
+        leds.main_leds_mut().iter_mut().for_each(|led| led.off());
 
         let style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
         // Create a text at position (20, 30) and draw it using the previously defined style
