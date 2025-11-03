@@ -41,13 +41,14 @@ pub struct ApusDisplayPins {
     pub db7: gpioe::PE7<Input<Floating>>,
     pub n_cs: gpioe::PE8<Input<Floating>>,
     pub d_c: gpioe::PE9<Input<Floating>>,
-    pub w_r: gpioe::PE10<Input<Floating>>,
+    pub n_wr: gpioe::PE10<Input<Floating>>,
+    pub n_rd : gpioe::PE11<Input<Floating>>,
     pub n_reset: gpiof::PF10<Input<Floating>>,
 }
 
 /// Initialize the ST7789 display
-pub fn display_init(pins: ApusDisplayPins, delay: cortex_m::delay::Delay) -> ApusDisplay {
-    let (data_interface, n_reset, mut n_chip_select) = interrupt::free(|cs| {
+pub fn display_init(pins: ApusDisplayPins, delay_source: cortex_m::delay::Delay) -> ApusDisplay {
+    let (data_interface, n_reset) = interrupt::free(|cs| {
         let db0 = pins.db0.into_push_pull_output(cs);
         let db1 = pins.db1.into_push_pull_output(cs);
         let db2 = pins.db2.into_push_pull_output(cs);
@@ -57,10 +58,17 @@ pub fn display_init(pins: ApusDisplayPins, delay: cortex_m::delay::Delay) -> Apu
         let db6 = pins.db6.into_push_pull_output(cs);
         let db7 = pins.db7.into_push_pull_output(cs);
 
-        let n_cs = pins.n_cs.into_push_pull_output(cs);
+        let mut n_cs = pins.n_cs.into_push_pull_output(cs);
         let d_c = pins.d_c.into_push_pull_output(cs);
-        let w_r = pins.w_r.into_push_pull_output(cs);
+        let mut n_wr = pins.n_wr.into_push_pull_output(cs);
+        let mut n_rd = pins.n_rd.into_push_pull_output(cs);
         let n_reset = pins.n_reset.into_push_pull_output(cs);
+
+        // initialise read and write as inactive (negative logic)
+        let _ = n_rd.set_high();
+        let _ = n_wr.set_high();
+        // enable display (negative logic)
+        let _ = n_cs.set_low();
 
         let bus = Generic8BitBus::new((
             // forward compatability for embedded-hal
@@ -74,17 +82,14 @@ pub fn display_init(pins: ApusDisplayPins, delay: cortex_m::delay::Delay) -> Apu
             db7.forward(),
         ));
 
-        let di = ParallelInterface::new(bus, d_c.forward(), w_r.forward());
-        (di, n_reset, n_cs)
+        let di = ParallelInterface::new(bus, d_c.forward(), n_wr.forward());
+        (di, n_reset)
     });
-
-    // Enable display chip select (low active)
-    let _ = n_chip_select.set_low();
 
     let mut display = Builder::new(ST7789, data_interface)
         .reset_pin(n_reset.forward())
         .display_size(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        .init(&mut delay.forward())
+        .init(&mut delay_source.forward())
         .unwrap();
 
     // Clear display

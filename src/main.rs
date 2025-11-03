@@ -57,7 +57,8 @@ fn main() -> ! {
         db7: gpioe.pe7,
         n_cs: gpioe.pe8,
         d_c: gpioe.pe9,
-        w_r: gpioe.pe10,
+        n_wr: gpioe.pe10,
+        n_rd: gpioe.pe11,
         n_reset: gpiof.pf10,
     };
 
