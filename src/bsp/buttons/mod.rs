@@ -23,16 +23,15 @@ impl Buttons {
             let user_0 = user_0.into_pull_down_input(cs);
             let user_1 = user_1.into_pull_down_input(cs);
 
-            let buttons = Self {
+            Self {
                 wake_up: Button::new(wake_up),
                 user_0: Button::new(user_0),
                 user_1: Button::new(user_1),
-            };
-
-            buttons
+            }
         })
     }
 
+    #[allow(dead_code)]
     pub fn all(&self) -> [&dyn ButtonLike; 3] {
         [&self.wake_up, &self.user_0, &self.user_1]
     }

@@ -11,7 +11,7 @@ use stm32f0xx_hal::prelude::_embedded_hal_gpio_OutputPin;
 pub const DISPLAY_WIDTH: u16 = 240;
 pub const DISPLAY_HEIGHT: u16 = 320;
 
-type ApusDisplay = mipidsi::Display<
+pub type ApusDisplay = mipidsi::Display<
     ParallelInterface<
         Generic8BitBus<
             Forward<gpioe::PE0<Output<PushPull>>, ForwardOutputPin>,

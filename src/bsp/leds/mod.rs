@@ -61,6 +61,7 @@ impl Leds {
         ]
     }
 
+    #[allow(dead_code)]
     pub fn main_leds_mut(&mut self) -> [&mut dyn LedLike; 3] {
         [&mut self.led3, &mut self.led4, &mut self.led5]
     }

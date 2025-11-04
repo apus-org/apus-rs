@@ -23,9 +23,6 @@ where
 {
     fn pressed(&self) -> bool {
         let state = self.pin.is_high();
-        match state {
-            Ok(pressed) => return pressed,
-            Err(_) => return false,
-        }
+        state.unwrap_or(false)
     }
 }
