@@ -2,8 +2,7 @@ pub mod led;
 
 use cortex_m::interrupt;
 use led::Led;
-use stm32f0xx_hal::gpio::gpioc;
-use stm32f0xx_hal::gpio::{Floating, Input, Output, PushPull};
+use stm32f0xx_hal::gpio::{gpioc, Floating, Input, Output, PushPull};
 
 use led::LedLike;
 

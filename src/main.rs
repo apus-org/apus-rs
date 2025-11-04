@@ -14,7 +14,7 @@ use embedded_graphics::{
 use panic_halt as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use crate::bsp::display::{display_init, ApusDisplayPins};
+use crate::bsp::{buttons::{Buttons, button::ButtonLike}, display::{ApusDisplayPins, display_init}, leds::led::LedLike};
 use stm32f0xx_hal::{pac, prelude::*};
 
 mod bsp;
@@ -35,6 +35,9 @@ fn main() -> ! {
 
     // configure clocks
     let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
+    // split GPIOA and GPIOD for the buttons
+    let gpioa = p.GPIOA.split(&mut rcc);
+    let gpiod = p.GPIOD.split(&mut rcc);
     // split GPIOC for the LEDs
     let gpioc = p.GPIOC.split(&mut rcc);
     // split GPIOE/F for the display
@@ -71,26 +74,40 @@ fn main() -> ! {
         gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
     );
 
-    // main loop
-    loop {
-        leds.main_leds_mut().iter_mut().for_each(|led| led.on());
+    // button construction
+    let buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
 
-        let _ = display.fill_solid(
+    let _ = display.fill_solid(
             &Rectangle::new(
                 Point::new(0, 0),
-                Size::new((DISPLAY_WIDTH / 2) as u32, (DISPLAY_HEIGHT / 2) as u32),
+                Size::new((DISPLAY_WIDTH) as u32, (DISPLAY_HEIGHT) as u32),
             ),
             Rgb565::WHITE,
         );
 
-        delay(sys_clock_hz / 2);
+    // text
+    let style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
+    let _ = Text::new("APUS-RS", Point::new(10, 20), style).draw(&mut display);
 
-        leds.main_leds_mut().iter_mut().for_each(|led| led.off());
+    // main loop
+    loop {
 
-        let style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
-        // Create a text at position (20, 30) and draw it using the previously defined style
-        let _ = Text::new("APUS-RS", Point::new(10, 20), style).draw(&mut display);
+        if buttons.wake_up.pressed() {
+            leds.led3.on();
+        } else {
+            leds.led3.off();
+        }
 
-        delay(sys_clock_hz / 2);
+        if buttons.user_0.pressed() {
+            leds.led4.on();
+        } else {
+            leds.led4.off();
+        }
+
+        if buttons.user_1.pressed() {
+            leds.led5.on();
+        } else {
+            leds.led5.off();
+        }
     }
 }
