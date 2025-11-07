@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use cortex_m::interrupt;
 use cortex_m_rt::entry;
 use embedded_graphics::{
     mono_font::{iso_8859_13::FONT_10X20, MonoTextStyle},
@@ -10,6 +11,7 @@ use embedded_graphics::{
     text::Text,
     Drawable,
 };
+use embedded_hal_compat::ForwardCompat;
 use panic_halt as _;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -19,7 +21,9 @@ use crate::bsp::{
     leds::led::LedLike,
     potentiometer::Potentiometer,
 };
-use stm32f0xx_hal::{adc::Adc, pac, prelude::*};
+use stm32f0xx_hal::{adc::Adc, i2c::I2c, pac, prelude::*};
+use lm75::{Lm75, Address};
+
 
 mod bsp;
 use bsp::leds::Leds;
@@ -43,6 +47,7 @@ fn main() -> ! {
     let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
     // split GPIOA and GPIOD for the buttons
     let gpioa = p.GPIOA.split(&mut rcc);
+    let gpiob = p.GPIOB.split(&mut rcc);
     let gpiod = p.GPIOD.split(&mut rcc);
     // split GPIOC for the LEDs
     let gpioc = p.GPIOC.split(&mut rcc);
@@ -54,6 +59,35 @@ fn main() -> ! {
     let sys_clock_hz = rcc.clocks.sysclk().0;
     let delay_display = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
 
+    let (sda, scl) = interrupt::free(|cs| {
+        let sda = gpiob.pb7.into_alternate_af1(cs);
+        let scl = gpiob.pb6.into_alternate_af1(cs);
+        (sda, scl)
+    });
+
+    let _myi2c = I2c::i2c1(p.I2C1, (scl, sda), 100.khz(), &mut rcc);
+  
+    let mut mcp = Lm75::new(_myi2c, Address::default());
+    
+
+    
+    let res = mcp.enable();
+
+    if res.is_ok() {
+        rprintln!("mcp init success");
+    } else {
+        rprintln!("mcp init failed");
+    }
+
+    let res = mcp.read_temperature();
+
+    if res.is_ok() {
+        rprintln!("Temp: {}", res.unwrap() as i32);
+    } else {
+        rprintln!("Read temp failed");
+    }
+
+    
     // display init
     let display_pins = ApusDisplayPins {
         db0: gpioe.pe0,
@@ -96,9 +130,9 @@ fn main() -> ! {
     );
 
     // text
-    let style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
-    let _ = Text::new("APUS-RS", Point::new(10, 20), style).draw(&mut display);
-
+    // let style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
+    // let _ = Text::new("temp: 25.17C", Point::new(10, 20), style).draw(&mut display);
+    
     // variables
     let mut poti_prev = 0;
 
@@ -122,12 +156,22 @@ fn main() -> ! {
             leds.led5.off();
         }
 
-        let poti_value = potentiometer.read();
-        let poti_diff = poti_value.abs_diff(poti_prev);
-        if poti_diff * 100 / POTI_MAX_VALUE >= POTI_THRESHOLD_PERCENT {
-            draw_poti(&mut display, poti_value);
-            poti_prev = poti_value;
-        }
+        // let poti_value = potentiometer.read();
+        // let poti_diff = poti_value.abs_diff(poti_prev);
+        // if poti_diff * 100 / POTI_MAX_VALUE >= POTI_THRESHOLD_PERCENT {
+        //     draw_poti(&mut display, poti_value);
+        //     poti_prev = poti_value;
+        // }
+
+        let res = mcp.read_temperature();
+
+    if res.is_ok() {
+        rprintln!("Temp: {}", res.unwrap() as i32);
+    } else {
+        rprintln!("Read temp failed");
+    }
+
+    for i in 0..100000 {}
     }
 }
 
