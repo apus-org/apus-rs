@@ -1,22 +1,106 @@
 {
     "version": "0.2.0",
+    // --------------------------------------------------
+    // Configurations
+    // --------------------------------------------------
     "configurations": [
+        // --------------------------------------------------
+        // Choose existing example
+        // --------------------------------------------------
         {
-            "preLaunchTask": "rust: cargo build",
+            "name": "Example: Default",
+            "preLaunchTask": "apus-rs: build default: all",
             "type": "probe-rs-debug",
             "request": "launch",
-            "name": "Debug",
-            "flashingConfig": {
-                "flashingEnabled": true,
-            },
             "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
             "coreConfigs": [
                 {
-                    "programBinary": "target/thumbv6m-none-eabi/debug/apus-rs",
+                    "programBinary": "target/thumbv6m-none-eabi/debug/examples/${input:exampleName}",
                     "rttEnabled": true,
-                    "svdFile": "device/STM32F0x2.svd",
-                },
+                    "svdFile": "device/STM32F0x2.svd"
+                }
             ]
-        }
+        },
+        {
+            "name": "Example: Release",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "preLaunchTask": "apus-rs: build release: all",
+            "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/release/examples/${input:exampleName}",
+                    "rttEnabled": true,
+                    "svdFile": "device/STM32F0x2.svd"
+                }
+            ]
+        },
+        // --------------------------------------------------
+        // Choose any example
+        // --------------------------------------------------
+        {
+            "name": "Any Example: Default",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "preLaunchTask": "apus-rs: build default: all",
+            "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/examples/${input:anyExampleName}",
+                    "rttEnabled": true,
+                    "svdFile": "device/STM32F0x2.svd"
+                }
+            ]
+        },
+        {
+            "name": "Any Example: Release",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "preLaunchTask": "apus-rs: build release: all",
+            "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/release/examples/${input:anyExampleName}",
+                    "rttEnabled": true,
+                    "svdFile": "device/STM32F0x2.svd"
+                }
+            ]
+        },
+
+    ],
+    // --------------------------------------------------
+    // Inputs
+    // --------------------------------------------------
+    "inputs": [
+        {
+            "id": "exampleName",
+            "type": "pickString",
+            "options": [
+                "full_demo",
+                "leds",
+                "buttons",
+                "potentiometer",
+            ],
+            "description": "Choose Example",
+            "default": "full_demo"
+        },
+        {
+            "id": "anyExampleName",
+            "type": "promptString",
+            "description": "Enter any Example Name",
+            "default": "full_demo"
+        },
     ]
 }

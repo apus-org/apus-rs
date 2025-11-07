@@ -10,32 +10,26 @@ use embedded_graphics::{
     text::Text,
     Drawable,
 };
-use panic_halt as _;
+use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use crate::bsp::{
+use apus_rs::bsp::{
     buttons::{button::ButtonLike, Buttons},
-    display::{display_init, ApusDisplay, ApusDisplayPins},
-    leds::led::LedLike,
-    potentiometer::Potentiometer,
+    display::{display_init, ApusDisplayPins, DISPLAY_HEIGHT, DISPLAY_WIDTH},
+    leds::{led::LedLike, Leds},
+    potentiometer::{Potentiometer, MAX_VALUE},
 };
 use stm32f0xx_hal::{adc::Adc, pac, prelude::*};
 
-mod bsp;
-use bsp::leds::Leds;
+mod common;
 
-const DISPLAY_HEIGHT: u16 = 320;
-const DISPLAY_WIDTH: u16 = 240;
-
-const POTI_THRESHOLD_PERCENT: u16 = 5;
-const POTI_MAX_VALUE: u16 = 3300;
+const POTI_THRESHOLD_PERCENT: u32 = 5;
 
 #[entry]
 fn main() -> ! {
     // rtt
     rtt_init_print!();
-    rprintln!("Hello World!");
-
+    rprintln!("APUS-RS example: full_demo");
     // peripherals
     let mut p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
@@ -100,7 +94,7 @@ fn main() -> ! {
     let _ = Text::new("APUS-RS", Point::new(10, 20), style).draw(&mut display);
 
     // variables
-    let mut poti_prev = 0;
+    let mut poti_previous_value = 0;
 
     // main loop
     loop {
@@ -122,28 +116,20 @@ fn main() -> ! {
             leds.led5.off();
         }
 
-        let poti_value = potentiometer.read();
-        let poti_diff = poti_value.abs_diff(poti_prev);
-        if poti_diff * 100 / POTI_MAX_VALUE >= POTI_THRESHOLD_PERCENT {
-            draw_poti(&mut display, poti_value);
-            poti_prev = poti_value;
+        let poti_current_value = potentiometer.read();
+        let poti_diff: u32 = poti_current_value.abs_diff(poti_previous_value) as u32;
+        if poti_diff.saturating_mul(100) / MAX_VALUE as u32 >= POTI_THRESHOLD_PERCENT {
+            // update only the delta area (black bar on white background)
+            common::poti_draw_delta(
+                &mut display,
+                poti_previous_value,
+                poti_current_value,
+                Rgb565::BLACK,
+                Rgb565::WHITE,
+                30,
+                30,
+            );
+            poti_previous_value = poti_current_value;
         }
     }
-}
-
-fn draw_poti(display: &mut ApusDisplay, poti_value: u16) {
-    // clear bar area
-    let _ = display.fill_solid(
-        &Rectangle::new(Point::new(0, 30), Size::new(DISPLAY_WIDTH as u32, 30)),
-        Rgb565::WHITE,
-    );
-
-    // map potentiometer value to display width
-    let bar_width = (poti_value as u32 * DISPLAY_WIDTH as u32 / POTI_MAX_VALUE as u32) as u16;
-
-    // draw bar as a filled rectangle
-    let _ = display.fill_solid(
-        &Rectangle::new(Point::new(0, 30), Size::new(bar_width as u32, 30)),
-        Rgb565::BLUE, // Change color as desired
-    );
 }
