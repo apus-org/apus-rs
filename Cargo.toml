@@ -6,11 +6,11 @@ edition = "2021"
 [dependencies]
 cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
 embedded-graphics = "0.8.1"
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0"
 embedded-hal-compat = "0.13.0"
 inverted-pin = "1.0.0"
 mipidsi = "0.9.0"
-stm32f0xx-hal = { version = "0.18.0", features = ["stm32f072"] }
+stm32f0xx-hal = { git = "https://github.com/stm32-rs/stm32f0xx-hal.git", rev = "8eda864", features = ["stm32f072"] }
 
 [dev-dependencies]
 cortex-m-rt = "0.7.5"

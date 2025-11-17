@@ -30,7 +30,7 @@ fn main() -> ! {
     let mut leds = Leds::new(
         gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
     );
-    let buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
+    let mut buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
 
     // delay for debouncing
     let sys_clock_hz = rcc.clocks.sysclk().0;

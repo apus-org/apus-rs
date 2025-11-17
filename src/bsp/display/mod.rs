@@ -1,7 +1,7 @@
 use cortex_m::interrupt;
 use embedded_graphics::prelude::RgbColor;
 use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb565};
-use embedded_hal_compat::{markers::ForwardOutputPin, Forward, ForwardCompat};
+use embedded_hal_compat::{ForwardCompat};
 use mipidsi::interface::{Generic8BitBus, ParallelInterface};
 use mipidsi::{models::ST7789, Builder};
 use stm32f0xx_hal::gpio::{gpioe, gpiof, Floating, Input, Output, PushPull};
@@ -14,20 +14,20 @@ pub const DISPLAY_HEIGHT: u16 = 320;
 pub type ApusDisplay = mipidsi::Display<
     ParallelInterface<
         Generic8BitBus<
-            Forward<gpioe::PE0<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE1<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE2<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE3<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE4<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE5<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE6<Output<PushPull>>, ForwardOutputPin>,
-            Forward<gpioe::PE7<Output<PushPull>>, ForwardOutputPin>,
+            gpioe::PE0<Output<PushPull>>,
+            gpioe::PE1<Output<PushPull>>,
+            gpioe::PE2<Output<PushPull>>,
+            gpioe::PE3<Output<PushPull>>,
+            gpioe::PE4<Output<PushPull>>,
+            gpioe::PE5<Output<PushPull>>,
+            gpioe::PE6<Output<PushPull>>,
+            gpioe::PE7<Output<PushPull>>,
         >,
-        Forward<gpioe::PE9<Output<PushPull>>, ForwardOutputPin>,
-        Forward<gpioe::PE10<Output<PushPull>>, ForwardOutputPin>,
+        gpioe::PE9<Output<PushPull>>,
+        gpioe::PE10<Output<PushPull>>,
     >,
     ST7789,
-    Forward<gpiof::PF10<Output<PushPull>>, ForwardOutputPin>,
+    gpiof::PF10<Output<PushPull>>,
 >;
 
 pub struct ApusDisplayPins {
@@ -71,23 +71,22 @@ pub fn display_init(pins: ApusDisplayPins, delay_source: cortex_m::delay::Delay)
         let _ = n_cs.set_low();
 
         let bus = Generic8BitBus::new((
-            // forward compatability for embedded-hal
-            db0.forward(),
-            db1.forward(),
-            db2.forward(),
-            db3.forward(),
-            db4.forward(),
-            db5.forward(),
-            db6.forward(),
-            db7.forward(),
+            db0,
+            db1,
+            db2,
+            db3,
+            db4,
+            db5,
+            db6,
+            db7,
         ));
 
-        let di = ParallelInterface::new(bus, d_c.forward(), n_wr.forward());
+        let di = ParallelInterface::new(bus, d_c, n_wr);
         (di, n_reset)
     });
 
     let mut display = Builder::new(ST7789, data_interface)
-        .reset_pin(n_reset.forward())
+        .reset_pin(n_reset)
         .display_size(DISPLAY_WIDTH, DISPLAY_HEIGHT)
         .init(&mut delay_source.forward())
         .unwrap();

@@ -1,4 +1,4 @@
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 
 /// Active-low LED abstraction
 pub struct Led<PIN> {

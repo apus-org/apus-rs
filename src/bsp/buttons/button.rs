@@ -1,11 +1,11 @@
-use embedded_hal::digital::v2::InputPin;
+use embedded_hal::digital::InputPin;
 
 pub struct Button<PIN> {
     pub pin: PIN,
 }
 
 pub trait ButtonLike {
-    fn pressed(&self) -> bool;
+    fn pressed(&mut self) -> bool;
 }
 
 impl<PIN> Button<PIN>
@@ -21,7 +21,7 @@ impl<PIN> ButtonLike for Button<PIN>
 where
     PIN: InputPin,
 {
-    fn pressed(&self) -> bool {
+    fn pressed(&mut self) -> bool {
         let state = self.pin.is_high();
         state.unwrap_or(false)
     }

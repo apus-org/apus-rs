@@ -75,7 +75,7 @@ fn main() -> ! {
     );
 
     // button construction
-    let buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
+    let mut buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
 
     // poti construction
     let adc = Adc::new(p.ADC, &mut rcc);
