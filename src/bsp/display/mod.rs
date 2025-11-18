@@ -1,7 +1,7 @@
 use cortex_m::interrupt;
 use embedded_graphics::prelude::RgbColor;
 use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb565};
-use embedded_hal_compat::{ForwardCompat};
+use embedded_hal::delay::DelayNs;
 use mipidsi::interface::{Generic8BitBus, ParallelInterface};
 use mipidsi::{models::ST7789, Builder};
 use stm32f0xx_hal::gpio::{gpioe, gpiof, Floating, Input, Output, PushPull};
@@ -47,7 +47,7 @@ pub struct ApusDisplayPins {
 }
 
 /// Initialize the ST7789 display
-pub fn display_init(pins: ApusDisplayPins, delay_source: cortex_m::delay::Delay) -> ApusDisplay {
+pub fn display_init(pins: ApusDisplayPins, mut delay_source : impl DelayNs) -> ApusDisplay {
     let (data_interface, n_reset) = interrupt::free(|cs| {
         let db0 = pins.db0.into_push_pull_output(cs);
         let db1 = pins.db1.into_push_pull_output(cs);
@@ -88,7 +88,7 @@ pub fn display_init(pins: ApusDisplayPins, delay_source: cortex_m::delay::Delay)
     let mut display = Builder::new(ST7789, data_interface)
         .reset_pin(n_reset)
         .display_size(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        .init(&mut delay_source.forward())
+        .init(&mut delay_source)
         .unwrap();
 
     // Clear display

@@ -1,5 +1,6 @@
 use crate::bsp::{
     buttons::Buttons,
+    delay::BusyDelay,
     display::{display_init, ApusDisplay, ApusDisplayPins},
     leds::Leds,
     potentiometer::Potentiometer,
@@ -49,22 +50,18 @@ pub struct Board {
     pub display: ApusDisplay,
     pub potentiometer: Potentiometer,
 
+    pub delay: BusyDelay,
+
     pub peripherals: FreePeripherals,
-    pub core_peripherals: FreeCorePeripherals,
     pub pins: FreePins,
 }
 
 impl Board {
-    pub fn new(peripherals: pac::Peripherals, core_peripherals: pac::CorePeripherals) -> Self {
+    pub fn new(peripherals: pac::Peripherals) -> Self {
         let mut p = peripherals;
-        let cp = core_peripherals;
 
         // configure clocks
-        let mut rcc = p
-            .RCC
-            .configure()
-            .sysclk(48.mhz())
-            .freeze(&mut p.FLASH);
+        let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
         // split GPIOA and GPIOD for the buttons
         let gpioa = p.GPIOA.split(&mut rcc);
         let gpiod = p.GPIOD.split(&mut rcc);
@@ -78,7 +75,7 @@ impl Board {
 
         // delay for display initialisation
         let sys_clock_hz = rcc.clocks.sysclk().0;
-        let delay_display = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
+        let delay_display = BusyDelay::new(sys_clock_hz);
 
         // display init
         let display_pins = ApusDisplayPins {
@@ -110,6 +107,9 @@ impl Board {
         // poti construction
         let adc = Adc::new(p.ADC, &mut rcc);
         let potentiometer = Potentiometer::new(gpioc.pc4, adc);
+
+        // user delay
+        let delay = BusyDelay::new(sys_clock_hz);
 
         let free_pins = leftover_init!(FreePins {
             // GPIOA leftovers
@@ -227,44 +227,18 @@ impl Board {
             comp: p.COMP,
         });
 
-        let free_core_peripherals = leftover_init!(FreeCorePeripherals {
-            cbp: cp.CBP,
-            cpuid: cp.CPUID,
-            dcb: cp.DCB,
-            dwt: cp.DWT,
-            fpb: cp.FPB,
-            itm: cp.ITM,
-            mpu: cp.MPU,
-            nvic: cp.NVIC,
-            scb: cp.SCB,
-            tpiu: cp.TPIU,
-        });
-
         Self {
             leds,
             buttons,
             display,
             potentiometer,
+            delay,
 
             peripherals: free_peripherals,
-            core_peripherals: free_core_peripherals,
             pins: free_pins,
         }
     }
 }
-
-leftover_struct!(FreeCorePeripherals {
-    cbp: pac::CBP,
-    cpuid: pac::CPUID,
-    dcb: pac::DCB,
-    dwt: pac::DWT,
-    fpb: pac::FPB,
-    itm: pac::ITM,
-    mpu: pac::MPU,
-    nvic: pac::NVIC,
-    scb: pac::SCB,
-    tpiu: pac::TPIU,
-});
 
 leftover_struct!(FreePeripherals {
     crc: pac::CRC,
