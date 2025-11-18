@@ -10,6 +10,7 @@ use embedded_graphics::{
     text::Text,
     Drawable,
 };
+use embedded_hal_compat::ForwardCompat;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -65,7 +66,7 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display);
+    let mut display = display_init(display_pins, delay_display.forward());
     // display clear
     let _ = display.clear(Rgb565::BLACK);
 

@@ -3,6 +3,7 @@
 
 use cortex_m_rt::entry;
 use embedded_graphics::{pixelcolor::Rgb565, prelude::RgbColor};
+use embedded_hal_compat::ForwardCompat;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -51,7 +52,7 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display);
+    let mut display = display_init(display_pins, delay_display.forward());
 
     let adc = Adc::new(p.ADC, &mut rcc);
     let mut potentiometer = Potentiometer::new(gpioc.pc4, adc);
