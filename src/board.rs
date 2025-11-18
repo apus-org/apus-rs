@@ -11,9 +11,10 @@ use stm32f0xx_hal::{
     gpio::{gpioa, gpiob, gpioc, gpiod, gpioe, gpiof, Floating, Input},
     pac,
     prelude::*,
+    rcc,
 };
 
-macro_rules! leftover_struct {
+macro_rules! optional_struct {
     (
         $struct_name:ident {
             $($field_name:ident : $field_ty:ty),* $(,)?
@@ -26,13 +27,13 @@ macro_rules! leftover_struct {
         impl $struct_name {
             /// Take a member out, leaving None behind
             pub fn take_field<T>(&mut self, field: &mut Option<T>) -> T {
-                field.take().expect("leftover field already taken")
+                field.take().expect("field already taken")
             }
         }
     };
 }
 
-macro_rules! leftover_init {
+macro_rules! optional_struct_init {
     (
         $struct_name:ident {
             $($field_name:ident : $expr:expr),* $(,)?
@@ -51,8 +52,7 @@ pub struct Board {
     pub potentiometer: Potentiometer,
 
     pub delay: BusyDelay,
-
-    pub peripherals: FreePeripherals,
+    pub peripherals: BoardPeripherals,
     pub pins: FreePins,
 }
 
@@ -111,7 +111,11 @@ impl Board {
         // user delay
         let delay = BusyDelay::new(sys_clock_hz);
 
-        let free_pins = leftover_init!(FreePins {
+        // board-peripherals that were configured/modified during initialisation
+        let configured_peripherals = ConfiguredPeripherals { rcc };
+
+        // leftover pins from splitting gpios
+        let free_pins = optional_struct_init!(FreePins {
             // GPIOA leftovers
             pa1: gpioa.pa1,
             pa2: gpioa.pa2,
@@ -189,7 +193,8 @@ impl Board {
             pf9: gpiof.pf9,
         });
 
-        let free_peripherals = leftover_init!(FreePeripherals {
+        // board-peripherals that are unused
+        let free_peripherals = optional_struct_init!(FreePeripherals {
             crc: p.CRC,
             spi1: p.SPI1,
             spi2: p.SPI2,
@@ -227,6 +232,11 @@ impl Board {
             comp: p.COMP,
         });
 
+        let peripherals = BoardPeripherals {
+            configured: configured_peripherals,
+            free: free_peripherals,
+        };
+
         Self {
             leds,
             buttons,
@@ -234,13 +244,22 @@ impl Board {
             potentiometer,
             delay,
 
-            peripherals: free_peripherals,
+            peripherals,
             pins: free_pins,
         }
     }
 }
 
-leftover_struct!(FreePeripherals {
+pub struct BoardPeripherals {
+    pub configured: ConfiguredPeripherals,
+    pub free: FreePeripherals,
+}
+
+pub struct ConfiguredPeripherals {
+    pub rcc: rcc::Rcc,
+}
+
+optional_struct!(FreePeripherals {
     crc: pac::CRC,
     spi1: pac::SPI1,
     spi2: pac::SPI2,
@@ -278,7 +297,7 @@ leftover_struct!(FreePeripherals {
     comp: pac::COMP,
 });
 
-leftover_struct!(FreePins {
+optional_struct!(FreePins {
     // GPIOA leftovers
     pa1: gpioa::PA1<Input<Floating>>,
     pa2: gpioa::PA2<Input<Floating>>,
