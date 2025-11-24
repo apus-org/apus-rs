@@ -4,6 +4,7 @@ use crate::bsp::{
     display::{display_init, ApusDisplay, ApusDisplayPins},
     leds::Leds,
     potentiometer::Potentiometer,
+    buzzer::Buzzer,
 };
 
 use stm32f0xx_hal::{
@@ -50,8 +51,9 @@ pub struct Board {
     pub buttons: Buttons,
     pub display: ApusDisplay,
     pub potentiometer: Potentiometer,
-
+    pub buzzer : Buzzer,
     pub delay: BusyDelay,
+    
     pub peripherals: BoardPeripherals,
     pub pins: FreePins,
 }
@@ -77,7 +79,7 @@ impl Board {
         let sys_clock_hz = rcc.clocks.sysclk().0;
         let delay_display = BusyDelay::new(sys_clock_hz);
 
-        // display init
+        // display construction
         let display_pins = ApusDisplayPins {
             db0: gpioe.pe0,
             db1: gpioe.pe1,
@@ -107,6 +109,9 @@ impl Board {
         // poti construction
         let adc = Adc::new(p.ADC, &mut rcc);
         let potentiometer = Potentiometer::new(gpioc.pc4, adc);
+
+        // buzzer construction
+        let buzzer = Buzzer::new(gpioc.pc9);
 
         // user delay
         let delay = BusyDelay::new(sys_clock_hz);
@@ -154,7 +159,6 @@ impl Board {
             // GPIOC leftovers
             pc3: gpioc.pc3,
             pc5: gpioc.pc5,
-            pc9: gpioc.pc9,
             pc10: gpioc.pc10,
             pc11: gpioc.pc11,
             pc12: gpioc.pc12,
@@ -243,6 +247,7 @@ impl Board {
             display,
             potentiometer,
             delay,
+            buzzer,
 
             peripherals,
             pins: free_pins,
@@ -335,7 +340,6 @@ optional_struct!(FreePins {
     // GPIOC leftovers
     pc3: gpioc::PC3<Input<Floating>>,
     pc5: gpioc::PC5<Input<Floating>>,
-    pc9: gpioc::PC9<Input<Floating>>,
     pc10: gpioc::PC10<Input<Floating>>,
     pc11: gpioc::PC11<Input<Floating>>,
     pc12: gpioc::PC12<Input<Floating>>,

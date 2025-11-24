@@ -92,6 +92,7 @@
                 "leds",
                 "buttons",
                 "potentiometer",
+                "buzzer",
             ],
             "description": "Choose Example",
             "default": "full_demo"
