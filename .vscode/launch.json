@@ -93,6 +93,7 @@
                 "buttons",
                 "potentiometer",
                 "buzzer",
+                "touch",
             ],
             "description": "Choose Example",
             "default": "full_demo"
