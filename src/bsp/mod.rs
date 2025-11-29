@@ -4,3 +4,4 @@ pub mod delay;
 pub mod display;
 pub mod leds;
 pub mod potentiometer;
+pub mod touch;
