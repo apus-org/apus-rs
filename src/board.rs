@@ -8,10 +8,9 @@ use crate::{
         potentiometer::Potentiometer,
         touch::{self, Touch},
     },
-    peripherals::spi::spi1::{self, Spi1},
+    peripherals::spi::spi1::{self, Spi1, Spi1Shared},
 };
 
-use crate::peripherals::spi::spi1::Spi1Shared;
 use cortex_m::singleton;
 use cortex_m::interrupt;
 
@@ -27,37 +26,6 @@ use stm32f0xx_hal::{
     rcc,
     
 };
-
-macro_rules! optional_struct {
-    (
-        $struct_name:ident {
-            $($field_name:ident : $field_ty:ty),* $(,)?
-        }
-    ) => {
-        pub struct $struct_name {
-            $(pub $field_name: Option<$field_ty>,)*
-        }
-
-        impl $struct_name {
-            /// Take a member out, leaving None behind
-            pub fn take_field<T>(&mut self, field: &mut Option<T>) -> T {
-                field.take().expect("field already taken")
-            }
-        }
-    };
-}
-
-macro_rules! optional_struct_init {
-    (
-        $struct_name:ident {
-            $($field_name:ident : $expr:expr),* $(,)?
-        }
-    ) => {
-        $struct_name {
-            $($field_name: Some($expr),)*
-        }
-    };
-}
 
 pub struct Board {
     pub leds: Leds,
