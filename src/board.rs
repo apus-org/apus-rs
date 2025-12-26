@@ -3,7 +3,9 @@ use crate::{
         buttons::Buttons,
         buzzer::Buzzer,
         delay::BusyDelay,
-        display::{ApusDisplay, ApusDisplayPins, display_init},
+        display::{
+            display_init, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH,
+        },
         leds::Leds,
         potentiometer::Potentiometer,
         touch::{self, Touch},
@@ -11,12 +13,12 @@ use crate::{
     peripherals::spi::spi1::{self, Spi1, Spi1Shared},
 };
 
-use cortex_m::singleton;
 use cortex_m::interrupt;
+use cortex_m::singleton;
 
-use shared_bus;
 use embedded_hal_bus::spi::ExclusiveDevice;
-use embedded_hal_compat::{ForwardCompat};
+use embedded_hal_compat::ForwardCompat;
+use shared_bus;
 
 use stm32f0xx_hal::{
     adc::Adc,
@@ -24,7 +26,6 @@ use stm32f0xx_hal::{
     pac,
     prelude::*,
     rcc,
-    
 };
 
 pub struct Board {
@@ -91,8 +92,17 @@ impl Board {
         // create touch driver now that manager_static has 'static lifetime
         let touch_spi1_proxy = spi1_bus_static.acquire_spi();
         let spi1_cs_delay = BusyDelay::new(sys_clock_hz);
-        let touch_device = ExclusiveDevice::new(touch_spi1_proxy.forward(), n_cs.forward(), spi1_cs_delay).unwrap();
-        let touch = touch::init(touch_device, touch::DEFAULT_THRESHOLD);
+        let touch_device =
+            ExclusiveDevice::new(touch_spi1_proxy.forward(), n_cs.forward(), spi1_cs_delay)
+                .unwrap();
+        let touch = Touch::new(
+            touch_device,
+            touch::DEFAULT_THRESHOLD,
+            DisplaySize {
+                x: DISPLAY_WIDTH,
+                y: DISPLAY_HEIGHT,
+            },
+        );
 
         // led construction
         let leds = Leds::new(
@@ -229,9 +239,7 @@ impl Board {
         };
 
         // board-peripherals that were configured/modified during initialisation
-        let configured_peripherals = ConfiguredPeripherals {
-            rcc,
-        };
+        let configured_peripherals = ConfiguredPeripherals { rcc };
 
         let peripherals = BoardPeripherals {
             configured: configured_peripherals,
@@ -256,18 +264,18 @@ impl Board {
     /// Return a reference to the installed SPI1 manager.
     /// Panics if the singleton wasn't installed.
     pub fn get_spi1(&self) -> &'static shared_bus::BusManagerSimple<Spi1> {
-        self.bus.spi1
+        self.bus
+            .spi1
             .expect("SPI1 manager not installed; call install_spi_singleton first")
     }
 
     /// Install the SPI1 manager into a static singleton
     fn install_spi1_singleton(manager: Spi1Shared) -> &'static shared_bus::BusManagerSimple<Spi1> {
-        let manager_static: &'static shared_bus::BusManagerSimple<Spi1> =
-            interrupt::free(|_| {
-                let slot = singleton!(: shared_bus::BusManagerSimple<Spi1> = manager)
-                    .expect("failed to install spi singleton");
-                &*slot
-            });
+        let manager_static: &'static shared_bus::BusManagerSimple<Spi1> = interrupt::free(|_| {
+            let slot = singleton!(: shared_bus::BusManagerSimple<Spi1> = manager)
+                .expect("failed to install spi singleton");
+            &*slot
+        });
 
         manager_static
     }
@@ -283,7 +291,7 @@ pub struct ConfiguredPeripherals {
 }
 
 pub struct BoardBus {
-    pub spi1: Option<&'static shared_bus::BusManagerSimple<Spi1>>
+    pub spi1: Option<&'static shared_bus::BusManagerSimple<Spi1>>,
 }
 
 optional_struct!(FreePeripherals {
