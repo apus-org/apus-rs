@@ -11,6 +11,13 @@ use stm32f0xx_hal::prelude::_embedded_hal_gpio_OutputPin;
 pub const DISPLAY_WIDTH: u16 = 240;
 pub const DISPLAY_HEIGHT: u16 = 320;
 
+pub struct DisplayPoint {
+    pub x: u16,
+    pub y: u16,
+}
+
+pub type DisplaySize = DisplayPoint;
+
 pub type ApusDisplay = mipidsi::Display<
     ParallelInterface<
         Generic8BitBus<
@@ -42,12 +49,12 @@ pub struct ApusDisplayPins {
     pub n_cs: gpioe::PE8<Input<Floating>>,
     pub d_c: gpioe::PE9<Input<Floating>>,
     pub n_wr: gpioe::PE10<Input<Floating>>,
-    pub n_rd : gpioe::PE11<Input<Floating>>,
+    pub n_rd: gpioe::PE11<Input<Floating>>,
     pub n_reset: gpiof::PF10<Input<Floating>>,
 }
 
 /// Initialize the ST7789 display
-pub fn display_init(pins: ApusDisplayPins, mut delay_source : impl DelayNs) -> ApusDisplay {
+pub fn display_init(pins: ApusDisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
     let (data_interface, n_reset) = interrupt::free(|cs| {
         let db0 = pins.db0.into_push_pull_output(cs);
         let db1 = pins.db1.into_push_pull_output(cs);
@@ -70,16 +77,7 @@ pub fn display_init(pins: ApusDisplayPins, mut delay_source : impl DelayNs) -> A
         // enable display (negative logic)
         let _ = n_cs.set_low();
 
-        let bus = Generic8BitBus::new((
-            db0,
-            db1,
-            db2,
-            db3,
-            db4,
-            db5,
-            db6,
-            db7,
-        ));
+        let bus = Generic8BitBus::new((db0, db1, db2, db3, db4, db5, db6, db7));
 
         let di = ParallelInterface::new(bus, d_c, n_wr);
         (di, n_reset)
