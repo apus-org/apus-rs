@@ -74,6 +74,8 @@ fn main() -> ! {
                 30,
             );
 
+            rprintln!("Potentiometer value: {}", value);
+
             prev_value = value;
         }
     }
