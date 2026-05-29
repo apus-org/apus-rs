@@ -14,6 +14,8 @@ dependencies = [
  "embedded-hal-compat",
  "heapless 0.7.17",
  "inverted-pin",
+ "lm75",
+ "mcp794xx",
  "mipidsi",
  "panic-halt",
  "panic-rtt-target",
@@ -100,6 +102,15 @@ name = "cast"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
+
+[[package]]
+name = "chrono"
+version = "0.4.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "cortex-m"
@@ -275,12 +286,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "lm75"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "430c2d95694c3f32c3ed0cd2f91e07c8a2935ca55697f174d9060a9eefa0ddf0"
+dependencies = [
+ "embedded-hal 1.0.0",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965"
 dependencies = [
  "scopeguard",
+]
+
+[[package]]
+name = "mcp794xx"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb40aec092a33f1d78ce17b2bf5a7d1e87b563b2c8b1bb8b269369794bc191cc"
+dependencies = [
+ "embedded-hal 1.0.0",
+ "rtcc",
 ]
 
 [[package]]
@@ -364,6 +394,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce25767e7b499d1b604768e7cde645d14cc8584231ea6b295e9c9eb22c02e1d1"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "rtcc"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95973c3a0274adc4f3c5b70d2b5b85618d6de9559a6737d3293ecae9a2fc0839"
+dependencies = [
+ "chrono",
 ]
 
 [[package]]
@@ -462,7 +501,6 @@ dependencies = [
 [[package]]
 name = "stm32f0xx-hal"
 version = "0.18.0"
-source = "git+https://github.com/jakobjung10/stm32f0xx-hal.git?branch=gpioe-AF1-reenablement#ce0dd2502e2f025662f4844fcad370a5de35dcbf"
 dependencies = [
  "bare-metal 1.0.0",
  "bxcan",
