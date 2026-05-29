@@ -10,12 +10,19 @@ embedded-hal = "1.0.0"
 embedded-hal-bus = "0.3.0"
 embedded-hal-compat = "0.13.0"
 inverted-pin = "1.0.0"
+lm75 = "1.0.0"
+mcp794xx = "0.4.0"
 mipidsi = "0.9.0"
 shared-bus = "0.3.1"
 # stm32f0xx-hal = { git = "https://github.com/stm32-rs/stm32f0xx-hal.git", rev = "8eda864", features = ["stm32f072"] }
 # stm32f0xx-hal = { path = "../stm32f0xx-hal", features = ["stm32f072"] }
-stm32f0xx-hal = { git = "https://github.com/jakobjung10/stm32f0xx-hal.git", branch = "gpioe-AF1-reenablement", features = ["stm32f072"] }
+stm32f0xx-hal = { git = "https://github.com/jakobjung10/stm32f0xx-hal.git", branch = "gpioe-AF1-reenablement", features = [
+    "stm32f072",
+] }
 tsc2046 = "0.1.0"
+
+[patch."https://github.com/jakobjung10/stm32f0xx-hal.git"]
+stm32f0xx-hal = { path = "../../stm32f0xx-hal" }
 
 [dev-dependencies]
 cortex-m-rt = "0.7.5"
