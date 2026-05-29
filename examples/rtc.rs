@@ -7,7 +7,7 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{
     delay::BusyDelay,
-    rtc::{NaiveDate, Rtc},
+    rtc::{rtc_init, DateTimeAccess, NaiveDate},
 };
 use apus_rs::peripherals::i2c::i2c1::init_i2c1;
 
@@ -24,7 +24,7 @@ fn main() -> ! {
     let gpiob = p.GPIOB.split(&mut rcc);
 
     let i2c = init_i2c1(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
-    let mut rtc = Rtc::new(i2c);
+    let mut rtc = rtc_init(i2c);
 
     // Reset the clock to a known time on every run, then start it.
     // A real app would set the time once and rely on the battery-backed oscillator.
