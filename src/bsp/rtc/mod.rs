@@ -7,7 +7,7 @@ pub use mcp794xx::{DateTimeAccess, Error, NaiveDate, NaiveDateTime};
 pub type ApusRtc<I2C> = Mcp794xx<I2cInterface<I2C>, ic::Mcp79410>;
 
 /// Construct the MCP79410 RTC driver.
-pub fn rtc_init<I2C, E>(i2c: I2C) -> ApusRtc<I2C>
+pub fn new<I2C, E>(i2c: I2C) -> ApusRtc<I2C>
 where
     I2C: I2c<Error = E>,
 {

@@ -19,7 +19,7 @@ use cortex_m::interrupt;
 use stm32f0xx_hal::prelude::*;
 
 /// Initialize SPI1 with PE13/PE14/PE15 and PE12 as CS, return a shared-bus manager and the CS pin
-pub fn init_spi1(
+pub fn init(
     spi1_peripheral: pac::SPI1,
     n_cs: gpioe::PE12<Input<Floating>>,
     sck: gpioe::PE13<Input<Floating>>,

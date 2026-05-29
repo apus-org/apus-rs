@@ -7,7 +7,7 @@ pub use lm75::Error;
 pub type ApusTemperature<I2C> = Lm75<I2C, ic::Lm75>;
 
 /// Construct the temperature sensor driver at the board's I2C address (0x48).
-pub fn temperature_init<I2C, E>(i2c: I2C) -> ApusTemperature<I2C>
+pub fn new<I2C, E>(i2c: I2C) -> ApusTemperature<I2C>
 where
     I2C: I2c<Error = E>,
 {

@@ -12,7 +12,7 @@ use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::delay::BusyDelay;
-use apus_rs::bsp::display::{display_init, ApusDisplayPins, DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use apus_rs::bsp::display::{self, ApusDisplayPins};
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]
@@ -52,7 +52,7 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display);
+    let mut display = display::init(display_pins, delay_display);
     let _ = display.clear(Rgb565::BLACK);
 
     // Draw a filled rectangle
