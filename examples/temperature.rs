@@ -5,8 +5,8 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{delay::BusyDelay, temperature::temperature_init};
-use apus_rs::peripherals::i2c::i2c1::init_i2c1;
+use apus_rs::bsp::{delay::BusyDelay, temperature};
+use apus_rs::peripherals::i2c::i2c1;
 
 use embedded_hal::delay::DelayNs;
 use stm32f0xx_hal::{pac, prelude::*};
@@ -21,8 +21,8 @@ fn main() -> ! {
     let gpiob = p.GPIOB.split(&mut rcc);
 
     // MCP9803 is the only I2C bus consumer here
-    let i2c = init_i2c1(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
-    let mut temperature = temperature_init(i2c);
+    let i2c = i2c1::init(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
+    let mut temperature = temperature::new(i2c);
 
     if temperature.enable().is_err() {
         rprintln!("failed to enable temperature sensor");

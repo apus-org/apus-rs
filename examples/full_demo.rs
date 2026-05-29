@@ -16,7 +16,7 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{
     buttons::{button::ButtonLike, Buttons},
-    display::{display_init, ApusDisplayPins, DISPLAY_HEIGHT, DISPLAY_WIDTH},
+    display::{self, ApusDisplayPins, DISPLAY_HEIGHT, DISPLAY_WIDTH},
     leds::{led::LedLike, Leds},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
@@ -66,7 +66,7 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display.forward());
+    let mut display = display::init(display_pins, delay_display.forward());
     // display clear
     let _ = display.clear(Rgb565::BLACK);
 

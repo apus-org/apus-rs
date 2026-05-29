@@ -11,10 +11,10 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{
     delay::BusyDelay,
-    display::{display_init, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
+    display::{self, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
     touch::{self, Touch},
 };
-use apus_rs::peripherals::spi::spi1::{init_spi1, Spi1};
+use apus_rs::peripherals::spi::spi1::{self, Spi1};
 
 use embedded_hal_compat::ForwardCompat;
 use stm32f0xx_hal::{pac, prelude::*};
@@ -56,10 +56,10 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display);
+    let mut display = display::init(display_pins, delay_display);
 
     // Initialize SPI1 and get a shared-bus manager and CS pin
-    let (manager, cs_pin) = init_spi1(
+    let (manager, cs_pin) = spi1::init(
         p.SPI1, gpioe.pe12, gpioe.pe13, gpioe.pe14, gpioe.pe15, &mut rcc,
     );
 

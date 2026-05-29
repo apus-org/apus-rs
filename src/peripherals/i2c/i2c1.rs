@@ -14,7 +14,7 @@ type I2c1Sda = gpiob::PB7<Alternate<AF1>>;
 pub type I2c1 = I2c<pac::I2C1, I2c1Scl, I2c1Sda>;
 
 /// Initialize I2C1 with PB6 (SCL) and PB7 (SDA) at 100 kHz.
-pub fn init_i2c1(
+pub fn init(
     i2c1: pac::I2C1,
     scl: gpiob::PB6<Input<Floating>>,
     sda: gpiob::PB7<Input<Floating>>,

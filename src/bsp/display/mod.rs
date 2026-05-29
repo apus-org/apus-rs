@@ -54,7 +54,7 @@ pub struct ApusDisplayPins {
 }
 
 /// Initialize the ST7789 display
-pub fn display_init(pins: ApusDisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
+pub fn init(pins: ApusDisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
     let (data_interface, n_reset) = interrupt::free(|cs| {
         let db0 = pins.db0.into_push_pull_output(cs);
         let db1 = pins.db1.into_push_pull_output(cs);

@@ -8,7 +8,7 @@ use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{
-    display::{display_init, ApusDisplayPins},
+    display::{self, ApusDisplayPins},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
 use stm32f0xx_hal::{adc::Adc, pac, prelude::*};
@@ -52,7 +52,7 @@ fn main() -> ! {
         n_reset: gpiof.pf10,
     };
 
-    let mut display = display_init(display_pins, delay_display.forward());
+    let mut display = display::init(display_pins, delay_display.forward());
 
     let adc = Adc::new(p.ADC, &mut rcc);
     let mut potentiometer = Potentiometer::new(gpioc.pc4, adc);

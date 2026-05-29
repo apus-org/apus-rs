@@ -4,7 +4,7 @@ use crate::{
         buzzer::Buzzer,
         delay::BusyDelay,
         display::{
-            display_init, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH,
+            self, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH,
         },
         leds::Leds,
         potentiometer::Potentiometer,
@@ -80,10 +80,10 @@ impl Board {
             n_reset: gpiof.pf10,
         };
 
-        let display = display_init(display_pins, delay_display);
+        let display = display::init(display_pins, delay_display);
 
         // spi1 construction
-        let (spi1_bus, n_cs) = spi1::init_spi1(
+        let (spi1_bus, n_cs) = spi1::init(
             p.SPI1, gpioe.pe12, gpioe.pe13, gpioe.pe14, gpioe.pe15, &mut rcc,
         );
         // spi1 as singleton so proxies get a 'static lifetime.
