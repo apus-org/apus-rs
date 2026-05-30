@@ -1,24 +1,20 @@
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{DrawTarget, Point, RgbColor, Size};
 use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
+use stm32f0xx_hal::gpio::{gpioe, Output};
 use tsc2046::Tsc2046;
 
+use crate::bsp::delay::BusyDelay;
 use crate::bsp::display::DisplaySize;
+use crate::peripherals::spi::spi1::Spi1;
 
 pub const DEFAULT_THRESHOLD: f32 = 1.0; // TODO: find optimal value
 
 /// SPI device type for the touch controller
 pub type ApusTouchDevice = embedded_hal_bus::spi::ExclusiveDevice<
-    embedded_hal_compat::Forward<
-        shared_bus::SpiProxy<'static, shared_bus::NullMutex<crate::peripherals::spi::spi1::Spi1>>,
-    >,
-    embedded_hal_compat::Forward<
-        stm32f0xx_hal::gpio::gpioe::PE12<
-            stm32f0xx_hal::gpio::Output<stm32f0xx_hal::gpio::PushPull>,
-        >,
-        embedded_hal_compat::markers::ForwardOutputPin,
-    >,
-    crate::bsp::delay::BusyDelay,
+    Spi1,
+    gpioe::PE12<Output<stm32f0xx_hal::gpio::PushPull>>,
+    BusyDelay,
 >;
 
 /// Concrete configured touch driver type used by the board.
