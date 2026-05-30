@@ -5,13 +5,11 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{
-    buzzer::Buzzer,
-};
+use apus_rs::bsp::buzzer::Buzzer;
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]
-fn main() -> ! { 
+fn main() -> ! {
     // rtt
     rtt_init_print!();
     rprintln!("APUS-RS example: buzzer");
@@ -20,7 +18,7 @@ fn main() -> ! {
     let cp = pac::CorePeripherals::take().unwrap();
     // clocks
     let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-     // gpio
+    // gpio
     let gpioc = p.GPIOC.split(&mut rcc);
 
     // delay

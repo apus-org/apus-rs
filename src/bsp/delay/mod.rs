@@ -1,6 +1,6 @@
 use embedded_hal::delay::DelayNs;
 
-const NANOS_PER_SECOND : u64 = 1_000_000_000;
+const NANOS_PER_SECOND: u64 = 1_000_000_000;
 
 pub struct BusyDelay {
     cpu_hz: u32,
