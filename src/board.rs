@@ -3,19 +3,26 @@ use crate::{
         buttons::Buttons,
         buzzer::Buzzer,
         delay::BusyDelay,
-        display::{
-            self, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH,
-        },
+        display::{self, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
         leds::Leds,
         potentiometer::Potentiometer,
+        rtc::{self, ApusRtc},
+        temperature::{self, ApusTemperature},
         touch::{self, Touch},
     },
-    peripherals::spi::spi1::{self, Spi1, Spi1Shared},
+    peripherals::{
+        i2c::i2c1::{self, I2c1},
+        spi::spi1::{self, Spi1, Spi1Shared},
+    },
 };
+
+use core::cell::RefCell;
 
 use cortex_m::interrupt;
 use cortex_m::singleton;
 
+use critical_section::Mutex;
+use embedded_hal_bus::i2c::CriticalSectionDevice;
 use embedded_hal_bus::spi::ExclusiveDevice;
 use embedded_hal_compat::ForwardCompat;
 use shared_bus;
@@ -28,6 +35,8 @@ use stm32f0xx_hal::{
     rcc,
 };
 
+type BoardI2c = CriticalSectionDevice<'static, I2c1>;
+
 pub struct Board {
     pub leds: Leds,
     pub buttons: Buttons,
@@ -36,6 +45,8 @@ pub struct Board {
     pub buzzer: Buzzer,
     pub delay: BusyDelay,
     pub touch: Touch,
+    pub temperature: ApusTemperature<BoardI2c>,
+    pub rtc: ApusRtc<BoardI2c>,
 
     pub peripherals: BoardPeripherals,
     pub pins: FreePins,
@@ -104,6 +115,12 @@ impl Board {
             },
         );
 
+        // i2c1 construction (shared by the temperature sensor and RTC)
+        let i2c1_bus = i2c1::init(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
+        let i2c1_bus_static = Self::install_i2c1_singleton(i2c1_bus);
+        let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
+        let rtc = rtc::new(CriticalSectionDevice::new(i2c1_bus_static));
+
         // led construction
         let leds = Leds::new(
             gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
@@ -148,8 +165,6 @@ impl Board {
             pb3: gpiob.pb3,
             pb4: gpiob.pb4,
             pb5: gpiob.pb5,
-            pb6: gpiob.pb6,
-            pb7: gpiob.pb7,
             pb8: gpiob.pb8,
             pb9: gpiob.pb9,
             pb10: gpiob.pb10,
@@ -202,7 +217,6 @@ impl Board {
             spi2: p.SPI2,
             dac: p.DAC,
             pwr: p.PWR,
-            i2c1: p.I2C1,
             i2c2: p.I2C2,
             iwdg: p.IWDG,
             wwdg: p.WWDG,
@@ -254,6 +268,8 @@ impl Board {
             buzzer,
             delay,
             touch,
+            temperature,
+            rtc,
 
             peripherals,
             pins: free_pins,
@@ -279,6 +295,17 @@ impl Board {
 
         manager_static
     }
+
+    /// Install the I2C1 bus into a static singleton
+    fn install_i2c1_singleton(bus: I2c1) -> &'static Mutex<RefCell<I2c1>> {
+        let bus_static: &'static Mutex<RefCell<I2c1>> = interrupt::free(|_| {
+            let slot = singleton!(: Mutex<RefCell<I2c1>> = Mutex::new(RefCell::new(bus)))
+                .expect("failed to install i2c1 singleton");
+            &*slot
+        });
+
+        bus_static
+    }
 }
 
 pub struct BoardPeripherals {
@@ -299,7 +326,6 @@ optional_struct!(FreePeripherals {
     spi2: pac::SPI2,
     dac: pac::DAC,
     pwr: pac::PWR,
-    i2c1: pac::I2C1,
     i2c2: pac::I2C2,
     iwdg: pac::IWDG,
     wwdg: pac::WWDG,
@@ -355,8 +381,6 @@ optional_struct!(FreePins {
     pb3: gpiob::PB3<Input<Floating>>,
     pb4: gpiob::PB4<Input<Floating>>,
     pb5: gpiob::PB5<Input<Floating>>,
-    pb6: gpiob::PB6<Input<Floating>>,
-    pb7: gpiob::PB7<Input<Floating>>,
     pb8: gpiob::PB8<Input<Floating>>,
     pb9: gpiob::PB9<Input<Floating>>,
     pb10: gpiob::PB10<Input<Floating>>,
