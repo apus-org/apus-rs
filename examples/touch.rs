@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 
-use cortex_m::{interrupt, singleton};
 use cortex_m_rt::entry;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{Point, RgbColor, Size};
@@ -14,9 +13,8 @@ use apus_rs::bsp::{
     display::{self, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
     touch::{self, Touch},
 };
-use apus_rs::peripherals::spi::spi1::{self, Spi1};
+use apus_rs::peripherals::spi::spi1;
 
-use embedded_hal_compat::ForwardCompat;
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]
@@ -58,29 +56,19 @@ fn main() -> ! {
 
     let mut display = display::init(display_pins, delay_display);
 
-    // Initialize SPI1 and get a shared-bus manager and CS pin
-    let (manager, cs_pin) = spi1::init(
+    // Initialize SPI1 and get the bus and CS pin
+    let (spi_bus, cs_pin) = spi1::init(
         p.SPI1, gpioe.pe12, gpioe.pe13, gpioe.pe14, gpioe.pe15, &mut rcc,
     );
-
-    // Make the manager static so proxies get 'static lifetime
-    let manager_static: &'static shared_bus::BusManagerSimple<Spi1> = interrupt::free(|_| {
-        let slot = singleton!(: shared_bus::BusManagerSimple<Spi1> = manager)
-            .expect("failed to install spi singleton");
-        &*slot
-    });
 
     // Create a small blocking delay helper for the main loop
     let sys_clock_hz = rcc.clocks.sysclk().0;
     let mut delay = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
 
-    // Acquire a proxy from the shared-bus manager
-    let proxy = manager_static.acquire_spi();
-
-    // Build an eh1-compatible ExclusiveDevice by forwarding the proxy and CS pin
+    // Touch driver owns the SPI1 bus exclusively
     let spi_dev = embedded_hal_bus::spi::ExclusiveDevice::new(
-        proxy.forward(),
-        cs_pin.forward(),
+        spi_bus,
+        cs_pin,
         BusyDelay::new(sys_clock_hz as u32),
     )
     .unwrap();
