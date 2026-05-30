@@ -27,10 +27,10 @@ fn main() -> ! {
     let mut rtc = rtc::new(i2c);
 
     // Reset the clock to a known time on every run, then start it.
-    // A real app would set the time once and rely on the battery-backed oscillator.
-    let datetime = NaiveDate::from_ymd_opt(2026, 5, 30)
+    // Alternatively, set the time once and rely on the battery-backed oscillator.
+    let datetime = NaiveDate::from_ymd_opt(2002, 6, 10)
         .unwrap()
-        .and_hms_opt(12, 0, 0)
+        .and_hms_opt(9, 0, 0)
         .unwrap();
     if rtc.set_datetime(&datetime).is_err() {
         rprintln!("failed to set datetime");
