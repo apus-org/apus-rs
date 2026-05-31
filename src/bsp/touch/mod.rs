@@ -191,7 +191,7 @@ impl Touch {
         let x_scale = self.size.x as f32 / touch_x_span;
         let y_scale = self.size.y as f32 / touch_y_span;
 
-        let calibration_data = TouchCalibrationData {
+        TouchCalibrationData {
             offset: TouchOffset {
                 x: x_offset,
                 y: y_offset,
@@ -200,9 +200,7 @@ impl Touch {
                 x: x_scale,
                 y: y_scale,
             },
-        };
-
-        calibration_data
+        }
     }
 
     pub fn calibrate_from_data(&mut self, data: TouchCalibrationData) {
