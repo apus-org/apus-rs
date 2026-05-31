@@ -36,7 +36,7 @@ fn main() -> ! {
 
     // Initialize display
     let sys_clock_hz = rcc.clocks.sysclk().0;
-    let delay_display = BusyDelay::new(sys_clock_hz as u32);
+    let delay_display = BusyDelay::new(sys_clock_hz);
 
     let display_pins = ApusDisplayPins {
         db0: gpioe.pe0,
@@ -66,12 +66,9 @@ fn main() -> ! {
     let mut delay = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
 
     // Touch driver owns the SPI1 bus exclusively
-    let spi_dev = embedded_hal_bus::spi::ExclusiveDevice::new(
-        spi_bus,
-        cs_pin,
-        BusyDelay::new(sys_clock_hz as u32),
-    )
-    .unwrap();
+    let spi_dev =
+        embedded_hal_bus::spi::ExclusiveDevice::new(spi_bus, cs_pin, BusyDelay::new(sys_clock_hz))
+            .unwrap();
 
     // Initialize the BSP touch driver from the prepared SPI device
     let mut touch = Touch::new(
@@ -106,11 +103,11 @@ fn main() -> ! {
             }
             Ok(None) => {
                 rprintln!("no touch");
-                delay.delay_ms(200u32);
+                delay.delay_ms(200);
             }
             Err(e) => {
                 rprintln!("error reading touch: {:?}", e);
-                delay.delay_ms(1000u32);
+                delay.delay_ms(1000);
             }
         }
     }

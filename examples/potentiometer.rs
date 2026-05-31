@@ -8,7 +8,7 @@ use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{
-    display::{self, ApusDisplayPins},
+    display::{self, ApusDisplayPins, DISPLAY_WIDTH},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
 use stm32f0xx_hal::{adc::Adc, pac, prelude::*};
@@ -64,10 +64,12 @@ fn main() -> ! {
         let diff: u32 = value.abs_diff(prev_value) as u32;
         if diff.saturating_mul(100) / MAX_VALUE as u32 >= POTI_THRESHOLD_PERCENT {
             // update only the delta (this example: white bar on black background)
-            common::poti_draw_delta(
+            let prev_w = (prev_value as u32 * DISPLAY_WIDTH as u32 / MAX_VALUE as u32) as u16;
+            let curr_w = (value as u32 * DISPLAY_WIDTH as u32 / MAX_VALUE as u32) as u16;
+            common::hbar_draw_delta(
                 &mut display,
-                prev_value,
-                value,
+                prev_w,
+                curr_w,
                 Rgb565::WHITE,
                 Rgb565::BLACK,
                 30,

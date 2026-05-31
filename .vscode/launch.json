@@ -96,7 +96,10 @@
                 "potentiometer",
                 "rtc",
                 "temperature",
-                "touch",
+                "touch_calibrate_restore",
+                "touch_calibrate_store",
+                "touch_paint",
+                "touch_theremin"
             ],
             "description": "Choose Example",
             "default": "full_demo"
