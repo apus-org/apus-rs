@@ -124,7 +124,7 @@ fn main() -> ! {
         }
 
         // temperature + time
-        if tick % SENSOR_PERIOD_TICKS == 0 {
+        if tick.is_multiple_of(SENSOR_PERIOD_TICKS) {
             let mut line: String<32> = String::new();
             match board.temperature.read_temperature() {
                 Ok(c) => {
