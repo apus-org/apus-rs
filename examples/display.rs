@@ -33,7 +33,7 @@ fn main() -> ! {
 
     // Delay for display init
     let sys_clock_hz = rcc.clocks.sysclk().0;
-    let delay_display = BusyDelay::new(sys_clock_hz as u32);
+    let delay_display = BusyDelay::new(sys_clock_hz);
 
     // Display pins
     let display_pins = ApusDisplayPins {

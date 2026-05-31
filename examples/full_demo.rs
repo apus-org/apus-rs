@@ -107,10 +107,14 @@ fn main() -> ! {
         let poti_current_value = board.potentiometer.read();
         let poti_diff = poti_current_value.abs_diff(poti_previous_value) as u32;
         if poti_diff.saturating_mul(100) / MAX_VALUE as u32 >= POTI_THRESHOLD_PERCENT {
-            common::poti_draw_delta(
+            let prev_w =
+                (poti_previous_value as u32 * DISPLAY_WIDTH as u32 / MAX_VALUE as u32) as u16;
+            let curr_w =
+                (poti_current_value as u32 * DISPLAY_WIDTH as u32 / MAX_VALUE as u32) as u16;
+            common::hbar_draw_delta(
                 &mut board.display,
-                poti_previous_value,
-                poti_current_value,
+                prev_w,
+                curr_w,
                 Rgb565::BLACK,
                 Rgb565::WHITE,
                 90,

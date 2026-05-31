@@ -48,6 +48,36 @@ pub struct TouchCalibrationData {
     scale: TouchScale,
 }
 
+impl TouchCalibrationData {
+    /// Length of the byte representation produced by [`Self::to_bytes`].
+    pub const SERIALIZED_LEN: usize = 12;
+
+    /// Serialize to a fixed byte array (offsets as u16, scales as f32, little-endian).
+    /// Persisting these bytes is the caller's concern.
+    pub fn to_bytes(&self) -> [u8; Self::SERIALIZED_LEN] {
+        let mut buf = [0u8; Self::SERIALIZED_LEN];
+        buf[0..2].copy_from_slice(&self.offset.x.to_le_bytes());
+        buf[2..4].copy_from_slice(&self.offset.y.to_le_bytes());
+        buf[4..8].copy_from_slice(&self.scale.x.to_le_bytes());
+        buf[8..12].copy_from_slice(&self.scale.y.to_le_bytes());
+        buf
+    }
+
+    /// Reconstruct from bytes produced by [`Self::to_bytes`].
+    pub fn from_bytes(bytes: &[u8; Self::SERIALIZED_LEN]) -> Self {
+        Self {
+            offset: TouchOffset {
+                x: u16::from_le_bytes([bytes[0], bytes[1]]),
+                y: u16::from_le_bytes([bytes[2], bytes[3]]),
+            },
+            scale: TouchScale {
+                x: f32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]),
+                y: f32::from_le_bytes([bytes[8], bytes[9], bytes[10], bytes[11]]),
+            },
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum TouchError {
     NotCalibrated,
@@ -120,6 +150,10 @@ impl Touch {
             y: calibrated_y,
             z: raw_point.z,
         }))
+    }
+
+    pub fn set_touch_threshold(&mut self, touch_threshold: f32) {
+        self.touch.set_touch_threshold(touch_threshold);
     }
 
     pub fn calibrate_from_display(
@@ -206,7 +240,6 @@ impl Touch {
             if let Ok(Some(tp)) = self.read_raw() {
                 sum_x += tp.x as u32;
                 sum_y += tp.y as u32;
-                count += 1;
             } else {
                 // Touch was released or error occurred, start over
                 sum_x = 0;
