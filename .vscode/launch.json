@@ -78,7 +78,6 @@
                 }
             ]
         },
-
     ],
     // --------------------------------------------------
     // Inputs
@@ -88,11 +87,15 @@
             "id": "exampleName",
             "type": "pickString",
             "options": [
+                "board",
+                "buttons",
+                "buzzer",
+                "display",
                 "full_demo",
                 "leds",
-                "buttons",
                 "potentiometer",
-                "buzzer",
+                "rtc",
+                "temperature",
                 "touch",
             ],
             "description": "Choose Example",
