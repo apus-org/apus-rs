@@ -2,6 +2,11 @@
 name = "apus-rs"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Board-support crate for the APUS board (STM32F072)"
+repository = "https://github.com/jakobjung10/apus-rs"
+readme = "README.md"
+exclude = ["device/"]
 
 [profile.dev]
 opt-level = 1
