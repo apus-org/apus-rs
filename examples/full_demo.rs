@@ -21,14 +21,12 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::board::Board;
 use apus_rs::bsp::{
-    buttons::button::ButtonLike,
     display::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
-    leds::led::LedLike,
     potentiometer::MAX_VALUE,
     rtc::{DateTimeAccess, NaiveDate},
 };
+use apus_rs::prelude::*;
 
-use embedded_hal::delay::DelayNs;
 use stm32f0xx_hal::pac;
 
 mod common;

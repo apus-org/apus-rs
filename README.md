@@ -38,9 +38,8 @@ block-beta
 #![no_main]
 
 use apus_rs::board::Board;
-use apus_rs::bsp::leds::led::LedLike;
+use apus_rs::prelude::*;
 use cortex_m_rt::entry;
-use embedded_hal::delay::DelayNs;
 use panic_halt as _;
 use stm32f0xx_hal::pac;
 

@@ -12,8 +12,8 @@ use apus_rs::bsp::{
     touch::{self, Touch, TouchCalibrationData},
 };
 use apus_rs::peripherals::{i2c::i2c1, spi::spi1};
+use apus_rs::prelude::*;
 
-use embedded_hal::delay::DelayNs;
 use embedded_hal_bus::spi::ExclusiveDevice;
 use stm32f0xx_hal::{pac, prelude::*};
 
