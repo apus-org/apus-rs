@@ -14,8 +14,8 @@ use apus_rs::bsp::{
     touch::{self, Touch},
 };
 use apus_rs::peripherals::spi::spi1;
+use apus_rs::prelude::*;
 
-use embedded_hal::delay::DelayNs;
 use embedded_hal_bus::spi::ExclusiveDevice;
 use stm32f0xx_hal::{pac, prelude::*};
 

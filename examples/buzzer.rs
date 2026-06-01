@@ -5,10 +5,10 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::buttons::{button::ButtonLike, Buttons};
+use apus_rs::bsp::buttons::Buttons;
 use apus_rs::bsp::buzzer::Buzzer;
 use apus_rs::bsp::delay::BusyDelay;
-use embedded_hal::delay::DelayNs;
+use apus_rs::prelude::*;
 use stm32f0xx_hal::{pac, prelude::*};
 
 mod common;

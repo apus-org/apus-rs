@@ -7,8 +7,8 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::bsp::{delay::BusyDelay, temperature};
 use apus_rs::peripherals::i2c::i2c1;
+use apus_rs::prelude::*;
 
-use embedded_hal::delay::DelayNs;
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]

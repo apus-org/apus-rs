@@ -3,13 +3,13 @@
 
 use apus_rs::bsp::buzzer::Buzzer;
 use apus_rs::bsp::display::{ApusDisplay, DISPLAY_HEIGHT};
+use apus_rs::prelude::*;
 use embedded_graphics::{
     draw_target::DrawTarget,
     pixelcolor::Rgb565,
     prelude::{Point, Size},
     primitives::Rectangle,
 };
-use embedded_hal::delay::DelayNs;
 
 /// Update a horizontal bar that grows rightward from x = 0, drawing only the
 /// delta area. Widths are in pixels; `fg` fills when growing, `bg` erases when

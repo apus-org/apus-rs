@@ -6,9 +6,8 @@ use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
 use apus_rs::board::Board;
-use apus_rs::bsp::leds::led::LedLike;
+use apus_rs::prelude::*;
 
-use embedded_hal::delay::DelayNs;
 use stm32f0xx_hal::pac;
 
 #[entry]

@@ -7,3 +7,4 @@ mod macros;
 pub mod board;
 pub mod bsp;
 pub mod peripherals;
+pub mod prelude;
