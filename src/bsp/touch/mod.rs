@@ -238,6 +238,7 @@ impl Touch {
             if let Ok(Some(tp)) = self.read_raw() {
                 sum_x += tp.x as u32;
                 sum_y += tp.y as u32;
+                count += 1;
             } else {
                 // Touch was released or error occurred, start over
                 sum_x = 0;
