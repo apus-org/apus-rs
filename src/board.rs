@@ -46,6 +46,7 @@ pub struct Board {
     pub temperature: ApusTemperature<BoardI2c>,
     pub rtc: ApusRtc<BoardI2c>,
 
+    pub header: ArduinoHeader,
     pub peripherals: BoardPeripherals,
     pub pins: FreePins,
 }
@@ -131,40 +132,44 @@ impl Board {
         // user delay
         let delay = BusyDelay::new(sys_clock_hz);
 
+        // pins routed to the arduino shield header
+        let header = optional_struct_init!(ArduinoHeader {
+            d0: gpioa.pa10,
+            d1: gpioa.pa9,
+            d2: gpiob.pb5,
+            d3: gpiob.pb2,
+            d4: gpioa.pa8,
+            d5: gpioa.pa7,
+            d6: gpioa.pa3,
+            d7: gpioa.pa5,
+            d8: gpioa.pa15,
+            d9: gpiob.pb3,
+            d10: gpiob.pb12,
+            d11: gpiob.pb15,
+            d12: gpiob.pb14,
+            d13: gpiob.pb13,
+            a0: gpioa.pa1,
+            a1: gpioa.pa2,
+            a2: gpioa.pa4,
+            a3: gpioa.pa6,
+            a4: gpiob.pb0,
+            a5: gpiob.pb1,
+        });
+
         // leftover pins from splitting gpios
         let free_pins = optional_struct_init!(FreePins {
             // GPIOA leftovers
-            pa1: gpioa.pa1,
-            pa2: gpioa.pa2,
-            pa3: gpioa.pa3,
-            pa4: gpioa.pa4,
-            pa5: gpioa.pa5,
-            pa6: gpioa.pa6,
-            pa7: gpioa.pa7,
-            pa8: gpioa.pa8,
-            pa9: gpioa.pa9,
-            pa10: gpioa.pa10,
             pa11: gpioa.pa11,
             pa12: gpioa.pa12,
             pa13: gpioa.pa13,
             pa14: gpioa.pa14,
-            pa15: gpioa.pa15,
 
             // GPIOB
-            pb0: gpiob.pb0,
-            pb1: gpiob.pb1,
-            pb2: gpiob.pb2,
-            pb3: gpiob.pb3,
             pb4: gpiob.pb4,
-            pb5: gpiob.pb5,
             pb8: gpiob.pb8,
             pb9: gpiob.pb9,
             pb10: gpiob.pb10,
             pb11: gpiob.pb11,
-            pb12: gpiob.pb12,
-            pb13: gpiob.pb13,
-            pb14: gpiob.pb14,
-            pb15: gpiob.pb15,
 
             // GPIOC leftovers
             pc3: gpioc.pc3,
@@ -259,6 +264,7 @@ impl Board {
             temperature,
             rtc,
 
+            header,
             peripherals,
             pins: free_pins,
         }
@@ -321,38 +327,68 @@ optional_struct!(FreePeripherals {
     comp: pac::COMP,
 });
 
+optional_struct!(
+    /// Pins routed to the Arduino Uno R3 shield header, left unconfigured.
+    ///
+    /// A4 and A5 reach PB0 and PB1 through the 0 Ω jumpers SJ2 and SJ1. Moving those
+    /// jumpers routes the header to PB11/PB10 (I2C2) instead, which are then taken from
+    /// [`FreePins`]. The SDA/SCL pull-ups R50/R51 are not fitted.
+    ArduinoHeader {
+        /// PA10 · USART1_RX
+        d0: gpioa::PA10<Input<Floating>>,
+        /// PA9 · USART1_TX
+        d1: gpioa::PA9<Input<Floating>>,
+        /// PB5 · INT0
+        d2: gpiob::PB5<Input<Floating>>,
+        /// PB2 · INT1
+        d3: gpiob::PB2<Input<Floating>>,
+        /// PA8 · TIM1_CH1
+        d4: gpioa::PA8<Input<Floating>>,
+        /// PA7 · TIM3_CH2
+        d5: gpioa::PA7<Input<Floating>>,
+        /// PA3 · COMP2_INP
+        d6: gpioa::PA3<Input<Floating>>,
+        /// PA5 · COMP2_INM
+        d7: gpioa::PA5<Input<Floating>>,
+        /// PA15 · TIM2_CH1
+        d8: gpioa::PA15<Input<Floating>>,
+        /// PB3 · TIM2_CH2
+        d9: gpiob::PB3<Input<Floating>>,
+        /// PB12 · SPI2_NSS
+        d10: gpiob::PB12<Input<Floating>>,
+        /// PB15 · SPI2_MOSI
+        d11: gpiob::PB15<Input<Floating>>,
+        /// PB14 · SPI2_MISO
+        d12: gpiob::PB14<Input<Floating>>,
+        /// PB13 · SPI2_SCK
+        d13: gpiob::PB13<Input<Floating>>,
+        /// PA1 · ADC_IN1
+        a0: gpioa::PA1<Input<Floating>>,
+        /// PA2 · ADC_IN2
+        a1: gpioa::PA2<Input<Floating>>,
+        /// PA4 · ADC_IN4
+        a2: gpioa::PA4<Input<Floating>>,
+        /// PA6 · ADC_IN6
+        a3: gpioa::PA6<Input<Floating>>,
+        /// PB0 · ADC_IN8, via SJ2
+        a4: gpiob::PB0<Input<Floating>>,
+        /// PB1 · ADC_IN9, via SJ1
+        a5: gpiob::PB1<Input<Floating>>,
+    }
+);
+
 optional_struct!(FreePins {
     // GPIOA leftovers
-    pa1: gpioa::PA1<Input<Floating>>,
-    pa2: gpioa::PA2<Input<Floating>>,
-    pa3: gpioa::PA3<Input<Floating>>,
-    pa4: gpioa::PA4<Input<Floating>>,
-    pa5: gpioa::PA5<Input<Floating>>,
-    pa6: gpioa::PA6<Input<Floating>>,
-    pa7: gpioa::PA7<Input<Floating>>,
-    pa8: gpioa::PA8<Input<Floating>>,
-    pa9: gpioa::PA9<Input<Floating>>,
-    pa10: gpioa::PA10<Input<Floating>>,
     pa11: gpioa::PA11<Input<Floating>>,
     pa12: gpioa::PA12<Input<Floating>>,
     pa13: gpioa::PA13<Input<Floating>>,
     pa14: gpioa::PA14<Input<Floating>>,
-    pa15: gpioa::PA15<Input<Floating>>,
     // GPIOB leftovers
-    pb0: gpiob::PB0<Input<Floating>>,
-    pb1: gpiob::PB1<Input<Floating>>,
-    pb2: gpiob::PB2<Input<Floating>>,
-    pb3: gpiob::PB3<Input<Floating>>,
     pb4: gpiob::PB4<Input<Floating>>,
-    pb5: gpiob::PB5<Input<Floating>>,
     pb8: gpiob::PB8<Input<Floating>>,
     pb9: gpiob::PB9<Input<Floating>>,
     pb10: gpiob::PB10<Input<Floating>>,
     pb11: gpiob::PB11<Input<Floating>>,
-    pb12: gpiob::PB12<Input<Floating>>,
-    pb13: gpiob::PB13<Input<Floating>>,
-    pb14: gpiob::PB14<Input<Floating>>,
-    pb15: gpiob::PB15<Input<Floating>>,
 
     // GPIOC leftovers
     pc3: gpioc::PC3<Input<Floating>>,
