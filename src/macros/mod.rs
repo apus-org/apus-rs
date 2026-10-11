@@ -1,12 +1,14 @@
 #[macro_export]
 macro_rules! optional_struct {
     (
+        $(#[$struct_meta:meta])*
         $struct_name:ident {
-            $($field_name:ident : $field_ty:ty),* $(,)?
+            $($(#[$field_meta:meta])* $field_name:ident : $field_ty:ty),* $(,)?
         }
     ) => {
+        $(#[$struct_meta])*
         pub struct $struct_name {
-            $(pub $field_name: Option<$field_ty>,)*
+            $($(#[$field_meta])* pub $field_name: Option<$field_ty>,)*
         }
 
         impl $struct_name {
