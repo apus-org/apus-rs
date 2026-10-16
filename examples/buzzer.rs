@@ -5,11 +5,12 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use apus::board::resources::Resources;
 use apus::bsp::buttons::Buttons;
 use apus::bsp::buzzer::Buzzer;
 use apus::bsp::delay::BusyDelay;
 use apus::prelude::*;
-use stm32f0xx_hal::{pac, prelude::*};
+use stm32f0xx_hal::pac;
 
 mod common;
 
@@ -25,19 +26,15 @@ fn main() -> ! {
     rtt_init_print!();
     rprintln!("APUS-RS example: buzzer (hold a button to play a note)");
 
-    let mut p = pac::Peripherals::take().unwrap();
+    let p = pac::Peripherals::take().unwrap();
 
-    let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
+    let res = Resources::new(p);
 
-    let gpioa = p.GPIOA.split(&mut rcc);
-    let gpioc = p.GPIOC.split(&mut rcc);
-    let gpiod = p.GPIOD.split(&mut rcc);
-
-    let sys_clock_hz = rcc.clocks.sysclk().0;
+    let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let mut delay = BusyDelay::new(sys_clock_hz);
 
-    let mut buzzer = Buzzer::new(gpioc.pc9);
-    let mut buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
+    let mut buzzer = Buzzer::new(res.buzzer);
+    let mut buttons = Buttons::new(res.buttons);
 
     loop {
         let note = if buttons.wake_up.pressed() {

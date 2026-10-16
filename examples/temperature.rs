@@ -5,30 +5,30 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use apus::board::resources::Resources;
 use apus::bsp::{delay::BusyDelay, temperature};
 use apus::peripherals::i2c::i2c1;
 use apus::prelude::*;
 
-use stm32f0xx_hal::{pac, prelude::*};
+use stm32f0xx_hal::pac;
 
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
     rprintln!("APUS-RS example: temperature");
 
-    let mut p = pac::Peripherals::take().unwrap();
-    let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-    let gpiob = p.GPIOB.split(&mut rcc);
+    let p = pac::Peripherals::take().unwrap();
+    let mut res = Resources::new(p);
 
     // MCP9803 is the only I2C bus consumer here
-    let i2c = i2c1::init(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
+    let i2c = i2c1::init(res.peripherals.i2c1, res.i2c1, &mut res.rcc);
     let mut temperature = temperature::new(i2c);
 
     if temperature.enable().is_err() {
         rprintln!("failed to enable temperature sensor");
     }
 
-    let sys_clock_hz = rcc.clocks.sysclk().0;
+    let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let mut delay = BusyDelay::new(sys_clock_hz);
 
     loop {

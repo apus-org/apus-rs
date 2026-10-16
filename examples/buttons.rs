@@ -5,9 +5,10 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use apus::board::resources::Resources;
 use apus::bsp::{buttons::Buttons, leds::Leds};
 use apus::prelude::*;
-use stm32f0xx_hal::{pac, prelude::*};
+use stm32f0xx_hal::pac;
 
 #[entry]
 fn main() -> ! {
@@ -15,23 +16,16 @@ fn main() -> ! {
     rtt_init_print!();
     rprintln!("APUS-RS example: buttons");
     // peripherals
-    let mut p = pac::Peripherals::take().unwrap();
+    let p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
-    // clocks
-    let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-    // gpio
-    let gpioc = p.GPIOC.split(&mut rcc);
-    let gpioa = p.GPIOA.split(&mut rcc);
-    let gpiod = p.GPIOD.split(&mut rcc);
+    let res = Resources::new(p);
 
     // construct LEDs and Buttons
-    let mut leds = Leds::new(
-        gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
-    );
-    let mut buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
+    let mut leds = Leds::new(res.leds);
+    let mut buttons = Buttons::new(res.buttons);
 
     // delay for debouncing
-    let sys_clock_hz = rcc.clocks.sysclk().0;
+    let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let mut delay = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
 
     loop {
