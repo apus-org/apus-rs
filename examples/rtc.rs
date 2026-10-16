@@ -5,12 +5,12 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{
+use apus::bsp::{
     delay::BusyDelay,
     rtc::{self, DateTimeAccess, NaiveDate},
 };
-use apus_rs::peripherals::i2c::i2c1;
-use apus_rs::prelude::*;
+use apus::peripherals::i2c::i2c1;
+use apus::prelude::*;
 
 use stm32f0xx_hal::{pac, prelude::*};
 

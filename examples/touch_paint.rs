@@ -8,12 +8,12 @@ use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{
+use apus::bsp::{
     delay::BusyDelay,
     display::{self, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
     touch::{self, Touch},
 };
-use apus_rs::peripherals::spi::spi1;
+use apus::peripherals::spi::spi1;
 
 use stm32f0xx_hal::{pac, prelude::*};
 

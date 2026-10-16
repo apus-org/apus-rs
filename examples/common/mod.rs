@@ -1,9 +1,9 @@
 // Shared example helpers; each example uses a subset.
 #![allow(dead_code)]
 
-use apus_rs::bsp::buzzer::Buzzer;
-use apus_rs::bsp::display::{ApusDisplay, DISPLAY_HEIGHT};
-use apus_rs::prelude::*;
+use apus::bsp::buzzer::Buzzer;
+use apus::bsp::display::{ApusDisplay, DISPLAY_HEIGHT};
+use apus::prelude::*;
 use embedded_graphics::{
     draw_target::DrawTarget,
     pixelcolor::Rgb565,

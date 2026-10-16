@@ -5,8 +5,8 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::board::Board;
-use apus_rs::prelude::*;
+use apus::board::Board;
+use apus::prelude::*;
 
 use stm32f0xx_hal::pac;
 

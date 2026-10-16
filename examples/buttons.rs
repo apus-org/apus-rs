@@ -5,8 +5,8 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{buttons::Buttons, leds::Leds};
-use apus_rs::prelude::*;
+use apus::bsp::{buttons::Buttons, leds::Leds};
+use apus::prelude::*;
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]
