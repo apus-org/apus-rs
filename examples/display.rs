@@ -11,9 +11,10 @@ use embedded_graphics::{
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use apus::board::resources::Resources;
 use apus::bsp::delay::BusyDelay;
-use apus::bsp::display::{self, ApusDisplayPins};
-use stm32f0xx_hal::{pac, prelude::*};
+use apus::bsp::display::{self};
+use stm32f0xx_hal::pac;
 
 #[entry]
 fn main() -> ! {
@@ -22,37 +23,15 @@ fn main() -> ! {
     rprintln!("APUS-RS example: display demo");
 
     // Peripherals
-    let mut p = pac::Peripherals::take().unwrap();
+    let p = pac::Peripherals::take().unwrap();
 
-    // Clocks
-    let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-
-    // GPIO splits
-    let gpioe = p.GPIOE.split(&mut rcc);
-    let gpiof = p.GPIOF.split(&mut rcc);
+    let res = Resources::new(p);
 
     // Delay for display init
-    let sys_clock_hz = rcc.clocks.sysclk().0;
+    let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let delay_display = BusyDelay::new(sys_clock_hz);
 
-    // Display pins
-    let display_pins = ApusDisplayPins {
-        db0: gpioe.pe0,
-        db1: gpioe.pe1,
-        db2: gpioe.pe2,
-        db3: gpioe.pe3,
-        db4: gpioe.pe4,
-        db5: gpioe.pe5,
-        db6: gpioe.pe6,
-        db7: gpioe.pe7,
-        n_cs: gpioe.pe8,
-        d_c: gpioe.pe9,
-        n_wr: gpioe.pe10,
-        n_rd: gpioe.pe11,
-        n_reset: gpiof.pf10,
-    };
-
-    let mut display = display::init(display_pins, delay_display);
+    let mut display = display::init(res.display, delay_display);
     let _ = display.clear(Rgb565::BLACK);
 
     // Draw a filled rectangle

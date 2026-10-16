@@ -7,11 +7,12 @@ use embedded_hal_compat::ForwardCompat;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use apus::board::resources::Resources;
 use apus::bsp::{
-    display::{self, ApusDisplayPins, DISPLAY_WIDTH},
+    display::{self, DISPLAY_WIDTH},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
-use stm32f0xx_hal::{adc::Adc, pac, prelude::*};
+use stm32f0xx_hal::{adc::Adc, pac};
 
 mod common;
 
@@ -23,39 +24,18 @@ fn main() -> ! {
     rtt_init_print!();
     rprintln!("APUS-RS example: potentiometer");
     // peripherals
-    let mut p = pac::Peripherals::take().unwrap();
+    let p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
-    // clocks
-    let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-    let gpioc = p.GPIOC.split(&mut rcc);
-    let gpioe = p.GPIOE.split(&mut rcc);
-    let gpiof = p.GPIOF.split(&mut rcc);
+    let mut res = Resources::new(p);
 
     // delay for display initialisation
-    let sys_clock_hz = rcc.clocks.sysclk().0;
+    let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let delay_display = cortex_m::delay::Delay::new(cp.SYST, sys_clock_hz);
 
-    // display init
-    let display_pins = ApusDisplayPins {
-        db0: gpioe.pe0,
-        db1: gpioe.pe1,
-        db2: gpioe.pe2,
-        db3: gpioe.pe3,
-        db4: gpioe.pe4,
-        db5: gpioe.pe5,
-        db6: gpioe.pe6,
-        db7: gpioe.pe7,
-        n_cs: gpioe.pe8,
-        d_c: gpioe.pe9,
-        n_wr: gpioe.pe10,
-        n_rd: gpioe.pe11,
-        n_reset: gpiof.pf10,
-    };
+    let mut display = display::init(res.display, delay_display.forward());
 
-    let mut display = display::init(display_pins, delay_display.forward());
-
-    let adc = Adc::new(p.ADC, &mut rcc);
-    let mut potentiometer = Potentiometer::new(gpioc.pc4, adc);
+    let adc = Adc::new(res.peripherals.adc, &mut res.rcc);
+    let mut potentiometer = Potentiometer::new(res.potentiometer, adc);
 
     let mut prev_value = 0u16;
 

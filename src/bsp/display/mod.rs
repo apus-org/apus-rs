@@ -27,7 +27,7 @@ pub type ApusDisplay = mipidsi::Display<
     gpiof::PF10<Output<PushPull>>,
 >;
 
-pub struct ApusDisplayPins {
+pub struct DisplayPins {
     pub db0: gpioe::PE0<Input<Floating>>,
     pub db1: gpioe::PE1<Input<Floating>>,
     pub db2: gpioe::PE2<Input<Floating>>,
@@ -44,7 +44,7 @@ pub struct ApusDisplayPins {
 }
 
 /// Initialize the ST7789 display
-pub fn init(pins: ApusDisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
+pub fn init(pins: DisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
     let (data_interface, n_reset) = interrupt::free(|cs| {
         let data = DataPins {
             db0: pins.db0.into_push_pull_output(cs),

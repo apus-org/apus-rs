@@ -1,79 +1,75 @@
-use crate::{
-    bsp::{
-        buttons::Buttons,
-        buzzer::Buzzer,
-        delay::BusyDelay,
-        display::{self, ApusDisplay, ApusDisplayPins, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
-        leds::Leds,
-        potentiometer::Potentiometer,
-        rtc::{self, ApusRtc},
-        temperature::{self, ApusTemperature},
-        touch::{self, Touch},
-    },
-    peripherals::{
-        i2c::i2c1::{self, I2c1},
-        spi::spi1,
-    },
-};
-
-use core::cell::RefCell;
-
-use cortex_m::interrupt;
-use cortex_m::singleton;
-
-use critical_section::Mutex;
-use embedded_hal_bus::i2c::CriticalSectionDevice;
-use embedded_hal_bus::spi::ExclusiveDevice;
-
 use stm32f0xx_hal::{
-    adc::Adc,
     gpio::{gpioa, gpiob, gpioc, gpiod, gpiof, Floating, Input},
     pac,
     prelude::*,
     rcc,
 };
 
-type BoardI2c = CriticalSectionDevice<'static, I2c1>;
+use crate::{
+    bsp::{
+        buttons::ButtonPins,
+        display::DisplayPins,
+        leds::{LedPins, RgbPins},
+    },
+    peripherals::{i2c::i2c1::I2c1Pins, spi::spi1::Spi1Pins},
+};
 
-pub struct Board {
-    pub leds: Leds,
-    pub buttons: Buttons,
-    pub display: ApusDisplay,
-    pub potentiometer: Potentiometer,
-    pub buzzer: Buzzer,
-    pub delay: BusyDelay,
-    pub touch: Touch,
-    pub temperature: ApusTemperature<BoardI2c>,
-    pub rtc: ApusRtc<BoardI2c>,
-
+/// The whole board, grouped by what each part is wired to and left unconfigured
+pub struct Resources {
+    pub rcc: rcc::Rcc,
+    pub leds: LedPins,
+    pub buttons: ButtonPins,
+    pub display: DisplayPins,
+    pub spi1: Spi1Pins,
+    pub i2c1: I2c1Pins,
+    pub potentiometer: gpioc::PC4<Input<Floating>>,
+    pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
-    pub peripherals: BoardPeripherals,
     pub pins: FreePins,
+    pub peripherals: Peripherals,
 }
 
-impl Board {
+/// Peripherals used by the on-board parts, and all others
+pub struct Peripherals {
+    pub spi1: pac::SPI1,
+    pub i2c1: pac::I2C1,
+    pub adc: pac::ADC,
+    pub free: FreePeripherals,
+}
+
+impl Resources {
+    /// Sets the system clock to 48 MHz and splits the GPIO ports
     pub fn new(peripherals: pac::Peripherals) -> Self {
         let mut p = peripherals;
 
         // configure clocks
         let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
-        // split GPIOA and GPIOD for the buttons
+
         let gpioa = p.GPIOA.split(&mut rcc);
-        let gpiod = p.GPIOD.split(&mut rcc);
-        // split GPIOC for the LEDs
+        let gpiob = p.GPIOB.split(&mut rcc);
         let gpioc = p.GPIOC.split(&mut rcc);
-        // split GPIOE/F for the display
+        let gpiod = p.GPIOD.split(&mut rcc);
         let gpioe = p.GPIOE.split(&mut rcc);
         let gpiof = p.GPIOF.split(&mut rcc);
-        // split GPIOB for leftover pins
-        let gpiob = p.GPIOB.split(&mut rcc);
 
-        // delay for display initialisation
-        let sys_clock_hz = rcc.clocks.sysclk().0;
-        let delay_display = BusyDelay::new(sys_clock_hz);
+        let leds = LedPins {
+            led3: gpioc.pc0,
+            led4: gpioc.pc1,
+            led5: gpioc.pc2,
+            rgb: RgbPins {
+                red: gpioc.pc6,
+                green: gpioc.pc7,
+                blue: gpioc.pc8,
+            },
+        };
 
-        // display construction
-        let display_pins = ApusDisplayPins {
+        let buttons = ButtonPins {
+            wake_up: gpioa.pa0,
+            user_0: gpiod.pd0,
+            user_1: gpiod.pd1,
+        };
+
+        let display = DisplayPins {
             db0: gpioe.pe0,
             db1: gpioe.pe1,
             db2: gpioe.pe2,
@@ -89,48 +85,19 @@ impl Board {
             n_reset: gpiof.pf10,
         };
 
-        let display = display::init(display_pins, delay_display);
+        // touch controller is the only device on SPI1
+        let spi1 = Spi1Pins {
+            n_cs: gpioe.pe12,
+            sck: gpioe.pe13,
+            miso: gpioe.pe14,
+            mosi: gpioe.pe15,
+        };
 
-        // spi1 construction (touch controller is the only device on SPI1)
-        let (spi1_bus, n_cs) = spi1::init(
-            p.SPI1, gpioe.pe12, gpioe.pe13, gpioe.pe14, gpioe.pe15, &mut rcc,
-        );
-
-        // touch driver owns the SPI1 bus exclusively
-        let spi1_cs_delay = BusyDelay::new(sys_clock_hz);
-        let touch_device = ExclusiveDevice::new(spi1_bus, n_cs, spi1_cs_delay).unwrap();
-        let touch = Touch::new(
-            touch_device,
-            touch::DEFAULT_THRESHOLD,
-            DisplaySize {
-                x: DISPLAY_WIDTH,
-                y: DISPLAY_HEIGHT,
-            },
-        );
-
-        // i2c1 construction (shared by the temperature sensor and RTC)
-        let i2c1_bus = i2c1::init(p.I2C1, gpiob.pb6, gpiob.pb7, &mut rcc);
-        let i2c1_bus_static = Self::install_i2c1_singleton(i2c1_bus);
-        let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
-        let rtc = rtc::new(CriticalSectionDevice::new(i2c1_bus_static));
-
-        // led construction
-        let leds = Leds::new(
-            gpioc.pc0, gpioc.pc1, gpioc.pc2, gpioc.pc6, gpioc.pc7, gpioc.pc8,
-        );
-
-        // button construction
-        let buttons = Buttons::new(gpioa.pa0, gpiod.pd0, gpiod.pd1);
-
-        // poti construction
-        let adc = Adc::new(p.ADC, &mut rcc);
-        let potentiometer = Potentiometer::new(gpioc.pc4, adc);
-
-        // buzzer construction
-        let buzzer = Buzzer::new(gpioc.pc9);
-
-        // user delay
-        let delay = BusyDelay::new(sys_clock_hz);
+        // shared by the temperature sensor and RTC
+        let i2c1 = I2c1Pins {
+            scl: gpiob.pb6,
+            sda: gpiob.pb7,
+        };
 
         // pins routed to the arduino shield header
         let header = ArduinoHeader {
@@ -245,50 +212,25 @@ impl Board {
             comp: p.COMP,
         };
 
-        // board-peripherals that were configured/modified during initialisation
-        let configured_peripherals = ConfiguredPeripherals { rcc };
-
-        let peripherals = BoardPeripherals {
-            configured: configured_peripherals,
-            free: free_peripherals,
-        };
-
         Self {
             leds,
             buttons,
             display,
-            potentiometer,
-            buzzer,
-            delay,
-            touch,
-            temperature,
-            rtc,
-
+            spi1,
+            i2c1,
+            potentiometer: gpioc.pc4,
+            buzzer: gpioc.pc9,
             header,
-            peripherals,
             pins: free_pins,
+            peripherals: Peripherals {
+                spi1: p.SPI1,
+                i2c1: p.I2C1,
+                adc: p.ADC,
+                free: free_peripherals,
+            },
+            rcc,
         }
     }
-
-    /// Install the I2C1 bus into a static singleton
-    fn install_i2c1_singleton(bus: I2c1) -> &'static Mutex<RefCell<I2c1>> {
-        let bus_static: &'static Mutex<RefCell<I2c1>> = interrupt::free(|_| {
-            let slot = singleton!(: Mutex<RefCell<I2c1>> = Mutex::new(RefCell::new(bus)))
-                .expect("failed to install i2c1 singleton");
-            &*slot
-        });
-
-        bus_static
-    }
-}
-
-pub struct BoardPeripherals {
-    pub configured: ConfiguredPeripherals,
-    pub free: FreePeripherals,
-}
-
-pub struct ConfiguredPeripherals {
-    pub rcc: rcc::Rcc,
 }
 
 pub struct FreePeripherals {
@@ -328,10 +270,6 @@ pub struct FreePeripherals {
 }
 
 /// Pins routed to the Arduino Uno R3 shield header, left unconfigured.
-///
-/// A4 and A5 reach PB0 and PB1 through the 0 Ω jumpers SJ2 and SJ1. Moving those
-/// jumpers routes the header to PB11/PB10 (I2C2) instead, which are then taken from
-/// [`FreePins`]. The SDA/SCL pull-ups R50/R51 are not fitted.
 pub struct ArduinoHeader {
     /// PA10 · USART1_RX
     pub d0: gpioa::PA10<Input<Floating>>,
