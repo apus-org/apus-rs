@@ -133,7 +133,7 @@ impl Board {
         let delay = BusyDelay::new(sys_clock_hz);
 
         // pins routed to the arduino shield header
-        let header = optional_struct_init!(ArduinoHeader {
+        let header = ArduinoHeader {
             d0: gpioa.pa10,
             d1: gpioa.pa9,
             d2: gpiob.pb5,
@@ -154,10 +154,10 @@ impl Board {
             a3: gpioa.pa6,
             a4: gpiob.pb0,
             a5: gpiob.pb1,
-        });
+        };
 
         // leftover pins from splitting gpios
-        let free_pins = optional_struct_init!(FreePins {
+        let free_pins = FreePins {
             // GPIOA leftovers
             pa11: gpioa.pa11,
             pa12: gpioa.pa12,
@@ -206,10 +206,10 @@ impl Board {
             pf3: gpiof.pf3,
             pf6: gpiof.pf6,
             pf9: gpiof.pf9,
-        });
+        };
 
         // board-peripherals that are unused
-        let free_peripherals = optional_struct_init!(FreePeripherals {
+        let free_peripherals = FreePeripherals {
             crc: p.CRC,
             spi2: p.SPI2,
             dac: p.DAC,
@@ -243,7 +243,7 @@ impl Board {
             can: p.CAN,
             stk: p.STK,
             comp: p.COMP,
-        });
+        };
 
         // board-peripherals that were configured/modified during initialisation
         let configured_peripherals = ConfiguredPeripherals { rcc };
@@ -291,138 +291,136 @@ pub struct ConfiguredPeripherals {
     pub rcc: rcc::Rcc,
 }
 
-optional_struct!(FreePeripherals {
-    crc: pac::CRC,
-    spi2: pac::SPI2,
-    dac: pac::DAC,
-    pwr: pac::PWR,
-    i2c2: pac::I2C2,
-    iwdg: pac::IWDG,
-    wwdg: pac::WWDG,
-    tim1: pac::TIM1,
-    tim2: pac::TIM2,
-    tim3: pac::TIM3,
-    tim14: pac::TIM14,
-    tim6: pac::TIM6,
-    tim7: pac::TIM7,
-    exti: pac::EXTI,
-    dma1: pac::DMA1,
-    syscfg: pac::SYSCFG,
-    usart1: pac::USART1,
-    usart2: pac::USART2,
-    usart3: pac::USART3,
-    usart4: pac::USART4,
-    rtc: pac::RTC,
-    tim15: pac::TIM15,
-    tim16: pac::TIM16,
-    tim17: pac::TIM17,
-    tsc: pac::TSC,
-    cec: pac::CEC,
-    flash: pac::FLASH,
-    dbgmcu: pac::DBGMCU,
-    usb: pac::USB,
-    crs: pac::CRS,
-    can: pac::CAN,
-    stk: pac::STK,
-    comp: pac::COMP,
-});
+pub struct FreePeripherals {
+    pub crc: pac::CRC,
+    pub spi2: pac::SPI2,
+    pub dac: pac::DAC,
+    pub pwr: pac::PWR,
+    pub i2c2: pac::I2C2,
+    pub iwdg: pac::IWDG,
+    pub wwdg: pac::WWDG,
+    pub tim1: pac::TIM1,
+    pub tim2: pac::TIM2,
+    pub tim3: pac::TIM3,
+    pub tim14: pac::TIM14,
+    pub tim6: pac::TIM6,
+    pub tim7: pac::TIM7,
+    pub exti: pac::EXTI,
+    pub dma1: pac::DMA1,
+    pub syscfg: pac::SYSCFG,
+    pub usart1: pac::USART1,
+    pub usart2: pac::USART2,
+    pub usart3: pac::USART3,
+    pub usart4: pac::USART4,
+    pub rtc: pac::RTC,
+    pub tim15: pac::TIM15,
+    pub tim16: pac::TIM16,
+    pub tim17: pac::TIM17,
+    pub tsc: pac::TSC,
+    pub cec: pac::CEC,
+    pub flash: pac::FLASH,
+    pub dbgmcu: pac::DBGMCU,
+    pub usb: pac::USB,
+    pub crs: pac::CRS,
+    pub can: pac::CAN,
+    pub stk: pac::STK,
+    pub comp: pac::COMP,
+}
 
-optional_struct!(
-    /// Pins routed to the Arduino Uno R3 shield header, left unconfigured.
-    ///
-    /// A4 and A5 reach PB0 and PB1 through the 0 Ω jumpers SJ2 and SJ1. Moving those
-    /// jumpers routes the header to PB11/PB10 (I2C2) instead, which are then taken from
-    /// [`FreePins`]. The SDA/SCL pull-ups R50/R51 are not fitted.
-    ArduinoHeader {
-        /// PA10 · USART1_RX
-        d0: gpioa::PA10<Input<Floating>>,
-        /// PA9 · USART1_TX
-        d1: gpioa::PA9<Input<Floating>>,
-        /// PB5 · INT0
-        d2: gpiob::PB5<Input<Floating>>,
-        /// PB2 · INT1
-        d3: gpiob::PB2<Input<Floating>>,
-        /// PA8 · TIM1_CH1
-        d4: gpioa::PA8<Input<Floating>>,
-        /// PA7 · TIM3_CH2
-        d5: gpioa::PA7<Input<Floating>>,
-        /// PA3 · COMP2_INP
-        d6: gpioa::PA3<Input<Floating>>,
-        /// PA5 · COMP2_INM
-        d7: gpioa::PA5<Input<Floating>>,
-        /// PA15 · TIM2_CH1
-        d8: gpioa::PA15<Input<Floating>>,
-        /// PB3 · TIM2_CH2
-        d9: gpiob::PB3<Input<Floating>>,
-        /// PB12 · SPI2_NSS
-        d10: gpiob::PB12<Input<Floating>>,
-        /// PB15 · SPI2_MOSI
-        d11: gpiob::PB15<Input<Floating>>,
-        /// PB14 · SPI2_MISO
-        d12: gpiob::PB14<Input<Floating>>,
-        /// PB13 · SPI2_SCK
-        d13: gpiob::PB13<Input<Floating>>,
-        /// PA1 · ADC_IN1
-        a0: gpioa::PA1<Input<Floating>>,
-        /// PA2 · ADC_IN2
-        a1: gpioa::PA2<Input<Floating>>,
-        /// PA4 · ADC_IN4
-        a2: gpioa::PA4<Input<Floating>>,
-        /// PA6 · ADC_IN6
-        a3: gpioa::PA6<Input<Floating>>,
-        /// PB0 · ADC_IN8, via SJ2
-        a4: gpiob::PB0<Input<Floating>>,
-        /// PB1 · ADC_IN9, via SJ1
-        a5: gpiob::PB1<Input<Floating>>,
-    }
-);
+/// Pins routed to the Arduino Uno R3 shield header, left unconfigured.
+///
+/// A4 and A5 reach PB0 and PB1 through the 0 Ω jumpers SJ2 and SJ1. Moving those
+/// jumpers routes the header to PB11/PB10 (I2C2) instead, which are then taken from
+/// [`FreePins`]. The SDA/SCL pull-ups R50/R51 are not fitted.
+pub struct ArduinoHeader {
+    /// PA10 · USART1_RX
+    pub d0: gpioa::PA10<Input<Floating>>,
+    /// PA9 · USART1_TX
+    pub d1: gpioa::PA9<Input<Floating>>,
+    /// PB5 · INT0
+    pub d2: gpiob::PB5<Input<Floating>>,
+    /// PB2 · INT1
+    pub d3: gpiob::PB2<Input<Floating>>,
+    /// PA8 · TIM1_CH1
+    pub d4: gpioa::PA8<Input<Floating>>,
+    /// PA7 · TIM3_CH2
+    pub d5: gpioa::PA7<Input<Floating>>,
+    /// PA3 · COMP2_INP
+    pub d6: gpioa::PA3<Input<Floating>>,
+    /// PA5 · COMP2_INM
+    pub d7: gpioa::PA5<Input<Floating>>,
+    /// PA15 · TIM2_CH1
+    pub d8: gpioa::PA15<Input<Floating>>,
+    /// PB3 · TIM2_CH2
+    pub d9: gpiob::PB3<Input<Floating>>,
+    /// PB12 · SPI2_NSS
+    pub d10: gpiob::PB12<Input<Floating>>,
+    /// PB15 · SPI2_MOSI
+    pub d11: gpiob::PB15<Input<Floating>>,
+    /// PB14 · SPI2_MISO
+    pub d12: gpiob::PB14<Input<Floating>>,
+    /// PB13 · SPI2_SCK
+    pub d13: gpiob::PB13<Input<Floating>>,
+    /// PA1 · ADC_IN1
+    pub a0: gpioa::PA1<Input<Floating>>,
+    /// PA2 · ADC_IN2
+    pub a1: gpioa::PA2<Input<Floating>>,
+    /// PA4 · ADC_IN4
+    pub a2: gpioa::PA4<Input<Floating>>,
+    /// PA6 · ADC_IN6
+    pub a3: gpioa::PA6<Input<Floating>>,
+    /// PB0 · ADC_IN8, via SJ2
+    pub a4: gpiob::PB0<Input<Floating>>,
+    /// PB1 · ADC_IN9, via SJ1
+    pub a5: gpiob::PB1<Input<Floating>>,
+}
 
-optional_struct!(FreePins {
+pub struct FreePins {
     // GPIOA leftovers
-    pa11: gpioa::PA11<Input<Floating>>,
-    pa12: gpioa::PA12<Input<Floating>>,
-    pa13: gpioa::PA13<Input<Floating>>,
-    pa14: gpioa::PA14<Input<Floating>>,
+    pub pa11: gpioa::PA11<Input<Floating>>,
+    pub pa12: gpioa::PA12<Input<Floating>>,
+    pub pa13: gpioa::PA13<Input<Floating>>,
+    pub pa14: gpioa::PA14<Input<Floating>>,
     // GPIOB leftovers
-    pb4: gpiob::PB4<Input<Floating>>,
-    pb8: gpiob::PB8<Input<Floating>>,
-    pb9: gpiob::PB9<Input<Floating>>,
-    pb10: gpiob::PB10<Input<Floating>>,
-    pb11: gpiob::PB11<Input<Floating>>,
+    pub pb4: gpiob::PB4<Input<Floating>>,
+    pub pb8: gpiob::PB8<Input<Floating>>,
+    pub pb9: gpiob::PB9<Input<Floating>>,
+    pub pb10: gpiob::PB10<Input<Floating>>,
+    pub pb11: gpiob::PB11<Input<Floating>>,
 
     // GPIOC leftovers
-    pc3: gpioc::PC3<Input<Floating>>,
-    pc5: gpioc::PC5<Input<Floating>>,
-    pc10: gpioc::PC10<Input<Floating>>,
-    pc11: gpioc::PC11<Input<Floating>>,
-    pc12: gpioc::PC12<Input<Floating>>,
-    pc13: gpioc::PC13<Input<Floating>>,
-    pc14: gpioc::PC14<Input<Floating>>,
-    pc15: gpioc::PC15<Input<Floating>>,
+    pub pc3: gpioc::PC3<Input<Floating>>,
+    pub pc5: gpioc::PC5<Input<Floating>>,
+    pub pc10: gpioc::PC10<Input<Floating>>,
+    pub pc11: gpioc::PC11<Input<Floating>>,
+    pub pc12: gpioc::PC12<Input<Floating>>,
+    pub pc13: gpioc::PC13<Input<Floating>>,
+    pub pc14: gpioc::PC14<Input<Floating>>,
+    pub pc15: gpioc::PC15<Input<Floating>>,
 
     // GPIOD leftovers
-    pd2: gpiod::PD2<Input<Floating>>,
-    pd3: gpiod::PD3<Input<Floating>>,
-    pd4: gpiod::PD4<Input<Floating>>,
-    pd5: gpiod::PD5<Input<Floating>>,
-    pd6: gpiod::PD6<Input<Floating>>,
-    pd7: gpiod::PD7<Input<Floating>>,
-    pd8: gpiod::PD8<Input<Floating>>,
-    pd9: gpiod::PD9<Input<Floating>>,
-    pd10: gpiod::PD10<Input<Floating>>,
-    pd11: gpiod::PD11<Input<Floating>>,
-    pd12: gpiod::PD12<Input<Floating>>,
-    pd13: gpiod::PD13<Input<Floating>>,
-    pd14: gpiod::PD14<Input<Floating>>,
-    pd15: gpiod::PD15<Input<Floating>>,
+    pub pd2: gpiod::PD2<Input<Floating>>,
+    pub pd3: gpiod::PD3<Input<Floating>>,
+    pub pd4: gpiod::PD4<Input<Floating>>,
+    pub pd5: gpiod::PD5<Input<Floating>>,
+    pub pd6: gpiod::PD6<Input<Floating>>,
+    pub pd7: gpiod::PD7<Input<Floating>>,
+    pub pd8: gpiod::PD8<Input<Floating>>,
+    pub pd9: gpiod::PD9<Input<Floating>>,
+    pub pd10: gpiod::PD10<Input<Floating>>,
+    pub pd11: gpiod::PD11<Input<Floating>>,
+    pub pd12: gpiod::PD12<Input<Floating>>,
+    pub pd13: gpiod::PD13<Input<Floating>>,
+    pub pd14: gpiod::PD14<Input<Floating>>,
+    pub pd15: gpiod::PD15<Input<Floating>>,
 
     // GPIOE leftovers
 
     // GPIOF leftovers
-    pf0: gpiof::PF0<Input<Floating>>,
-    pf1: gpiof::PF1<Input<Floating>>,
-    pf2: gpiof::PF2<Input<Floating>>,
-    pf3: gpiof::PF3<Input<Floating>>,
-    pf6: gpiof::PF6<Input<Floating>>,
-    pf9: gpiof::PF9<Input<Floating>>,
-});
+    pub pf0: gpiof::PF0<Input<Floating>>,
+    pub pf1: gpiof::PF1<Input<Floating>>,
+    pub pf2: gpiof::PF2<Input<Floating>>,
+    pub pf3: gpiof::PF3<Input<Floating>>,
+    pub pf6: gpiof::PF6<Input<Floating>>,
+    pub pf9: gpiof::PF9<Input<Floating>>,
+}
