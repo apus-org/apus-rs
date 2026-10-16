@@ -19,13 +19,13 @@ use heapless::String;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::board::Board;
-use apus_rs::bsp::{
+use apus::board::Board;
+use apus::bsp::{
     display::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
     potentiometer::MAX_VALUE,
     rtc::{DateTimeAccess, NaiveDate},
 };
-use apus_rs::prelude::*;
+use apus::prelude::*;
 
 use stm32f0xx_hal::pac;
 

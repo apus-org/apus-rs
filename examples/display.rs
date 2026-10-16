@@ -11,8 +11,8 @@ use embedded_graphics::{
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::delay::BusyDelay;
-use apus_rs::bsp::display::{self, ApusDisplayPins};
+use apus::bsp::delay::BusyDelay;
+use apus::bsp::display::{self, ApusDisplayPins};
 use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]

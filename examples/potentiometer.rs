@@ -7,7 +7,7 @@ use embedded_hal_compat::ForwardCompat;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus_rs::bsp::{
+use apus::bsp::{
     display::{self, ApusDisplayPins, DISPLAY_WIDTH},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
