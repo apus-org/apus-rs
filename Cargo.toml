@@ -19,6 +19,7 @@ opt-level = "z"
 cortex-m = { version = "0.7.7" }
 stm32f0xx-hal = { git = "https://github.com/stm32-rs/stm32f0xx-hal.git", features = [
     "stm32f072",
+    "stm32-usbd",
 ] }
 critical-section = "1"
 embedded-hal = "1.0.0"
@@ -30,6 +31,7 @@ mipidsi = "0.10.0"
 lm75 = "1.0.0"
 mcp794xx = "0.4.0"
 tsc2046 = "0.1.0"
+usb-device = "0.2.9"
 
 # eh-1.0 I2C impl pending upstream
 [patch."https://github.com/stm32-rs/stm32f0xx-hal.git"]

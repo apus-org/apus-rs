@@ -19,6 +19,7 @@ use crate::{
         i2c::i2c1::{self, I2c1},
         serial::usart3::{self, Usart3},
         spi::spi1,
+        usb::{self, ApusUsbBus},
     },
 };
 
@@ -60,6 +61,7 @@ pub struct Board {
     pub rtc: ApusRtc<BoardI2c>,
     pub can: CanBus,
     pub vcom: Usart3,
+    pub usb: &'static ApusUsbBus,
 
     pub header: ArduinoHeader,
     pub peripherals: BoardPeripherals,
@@ -103,6 +105,11 @@ impl Board {
         // vcom construction (USART3 to the FTDI USB-UART)
         let vcom = usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
 
+        // usb construction (static, so classes and devices built from it can be 'static too)
+        let usb_bus = usb::init(res.peripherals.usb, res.usb);
+        let usb: &'static ApusUsbBus =
+            singleton!(: ApusUsbBus = usb_bus).expect("failed to install usb singleton");
+
         // led construction
         let leds = Leds::new(res.leds);
 
@@ -131,6 +138,7 @@ impl Board {
             rtc,
             can,
             vcom,
+            usb,
 
             header: res.header,
             peripherals: BoardPeripherals {

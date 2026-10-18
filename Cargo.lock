@@ -24,6 +24,7 @@ dependencies = [
  "rtt-target",
  "stm32f0xx-hal",
  "tsc2046",
+ "usb-device",
 ]
 
 [[package]]
@@ -417,6 +418,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
+name = "stm32-usbd"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6c94998f166d66b210a164648a0b7866428d8f1e0740bf8a4c5edd89d4750c1"
+dependencies = [
+ "cortex-m",
+ "usb-device",
+ "vcell",
+]
+
+[[package]]
 name = "stm32f0"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,6 +453,7 @@ dependencies = [
  "embedded-hal 1.0.0",
  "embedded-storage",
  "nb 1.1.0",
+ "stm32-usbd",
  "stm32f0",
  "void",
 ]
@@ -477,6 +490,12 @@ name = "unicode-ident"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f63a545481291138910575129486daeaf8ac54aee4387fe7906919f7830c7d9d"
+
+[[package]]
+name = "usb-device"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f6cc3adc849b5292b4075fc0d5fdcf2f24866e88e336dd27a8943090a520508"
 
 [[package]]
 name = "vcell"
