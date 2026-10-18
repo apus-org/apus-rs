@@ -13,6 +13,7 @@ use crate::{
     },
     peripherals::{
         can::CanPins, i2c::i2c1::I2c1Pins, serial::usart3::Usart3Pins, spi::spi1::Spi1Pins,
+        usb::UsbPins,
     },
 };
 
@@ -26,6 +27,7 @@ pub struct Resources {
     pub i2c1: I2c1Pins,
     pub can: CanPins,
     pub usart3: Usart3Pins,
+    pub usb: UsbPins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
@@ -40,6 +42,7 @@ pub struct Peripherals {
     pub adc: pac::ADC,
     pub can: pac::CAN,
     pub usart3: pac::USART3,
+    pub usb: pac::USB,
     pub free: FreePeripherals,
 }
 
@@ -123,6 +126,12 @@ impl Resources {
             rx: gpiod.pd9,
         };
 
+        // USB DATA port
+        let usb = UsbPins {
+            dm: gpioa.pa11,
+            dp: gpioa.pa12,
+        };
+
         // pins routed to the arduino shield header
         let header = ArduinoHeader {
             d0: gpioa.pa10,
@@ -150,8 +159,6 @@ impl Resources {
         // leftover pins from splitting gpios
         let free_pins = FreePins {
             // GPIOA leftovers
-            pa11: gpioa.pa11,
-            pa12: gpioa.pa12,
             pa13: gpioa.pa13,
             pa14: gpioa.pa14,
 
@@ -221,7 +228,6 @@ impl Resources {
             cec: p.CEC,
             flash: p.FLASH,
             dbgmcu: p.DBGMCU,
-            usb: p.USB,
             crs: p.CRS,
             stk: p.STK,
             comp: p.COMP,
@@ -235,6 +241,7 @@ impl Resources {
             i2c1,
             can,
             usart3,
+            usb,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             header,
@@ -245,6 +252,7 @@ impl Resources {
                 adc: p.ADC,
                 can: p.CAN,
                 usart3: p.USART3,
+                usb: p.USB,
                 free: free_peripherals,
             },
             rcc,
@@ -280,7 +288,6 @@ pub struct FreePeripherals {
     pub cec: pac::CEC,
     pub flash: pac::FLASH,
     pub dbgmcu: pac::DBGMCU,
-    pub usb: pac::USB,
     pub crs: pac::CRS,
     pub stk: pac::STK,
     pub comp: pac::COMP,
@@ -332,8 +339,6 @@ pub struct ArduinoHeader {
 
 pub struct FreePins {
     // GPIOA leftovers
-    pub pa11: gpioa::PA11<Input<Floating>>,
-    pub pa12: gpioa::PA12<Input<Floating>>,
     pub pa13: gpioa::PA13<Input<Floating>>,
     pub pa14: gpioa::PA14<Input<Floating>>,
     // GPIOB leftovers
