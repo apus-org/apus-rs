@@ -11,7 +11,7 @@ use crate::{
         display::DisplayPins,
         leds::{LedPins, RgbPins},
     },
-    peripherals::{i2c::i2c1::I2c1Pins, spi::spi1::Spi1Pins},
+    peripherals::{can::CanPins, i2c::i2c1::I2c1Pins, spi::spi1::Spi1Pins},
 };
 
 /// The whole board, grouped by what each part is wired to and left unconfigured
@@ -22,6 +22,7 @@ pub struct Resources {
     pub display: DisplayPins,
     pub spi1: Spi1Pins,
     pub i2c1: I2c1Pins,
+    pub can: CanPins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
@@ -34,6 +35,7 @@ pub struct Peripherals {
     pub spi1: pac::SPI1,
     pub i2c1: pac::I2C1,
     pub adc: pac::ADC,
+    pub can: pac::CAN,
     pub free: FreePeripherals,
 }
 
@@ -99,6 +101,12 @@ impl Resources {
             sda: gpiob.pb7,
         };
 
+        let can = CanPins {
+            rx: gpiob.pb8,
+            tx: gpiob.pb9,
+            mode: gpioc.pc13,
+        };
+
         // pins routed to the arduino shield header
         let header = ArduinoHeader {
             d0: gpioa.pa10,
@@ -133,8 +141,6 @@ impl Resources {
 
             // GPIOB
             pb4: gpiob.pb4,
-            pb8: gpiob.pb8,
-            pb9: gpiob.pb9,
             pb10: gpiob.pb10,
             pb11: gpiob.pb11,
 
@@ -144,7 +150,6 @@ impl Resources {
             pc10: gpioc.pc10,
             pc11: gpioc.pc11,
             pc12: gpioc.pc12,
-            pc13: gpioc.pc13,
             pc14: gpioc.pc14,
             pc15: gpioc.pc15,
 
@@ -207,7 +212,6 @@ impl Resources {
             dbgmcu: p.DBGMCU,
             usb: p.USB,
             crs: p.CRS,
-            can: p.CAN,
             stk: p.STK,
             comp: p.COMP,
         };
@@ -218,6 +222,7 @@ impl Resources {
             display,
             spi1,
             i2c1,
+            can,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             header,
@@ -226,6 +231,7 @@ impl Resources {
                 spi1: p.SPI1,
                 i2c1: p.I2C1,
                 adc: p.ADC,
+                can: p.CAN,
                 free: free_peripherals,
             },
             rcc,
@@ -264,7 +270,6 @@ pub struct FreePeripherals {
     pub dbgmcu: pac::DBGMCU,
     pub usb: pac::USB,
     pub crs: pac::CRS,
-    pub can: pac::CAN,
     pub stk: pac::STK,
     pub comp: pac::COMP,
 }
@@ -321,8 +326,6 @@ pub struct FreePins {
     pub pa14: gpioa::PA14<Input<Floating>>,
     // GPIOB leftovers
     pub pb4: gpiob::PB4<Input<Floating>>,
-    pub pb8: gpiob::PB8<Input<Floating>>,
-    pub pb9: gpiob::PB9<Input<Floating>>,
     pub pb10: gpiob::PB10<Input<Floating>>,
     pub pb11: gpiob::PB11<Input<Floating>>,
 
@@ -332,7 +335,6 @@ pub struct FreePins {
     pub pc10: gpioc::PC10<Input<Floating>>,
     pub pc11: gpioc::PC11<Input<Floating>>,
     pub pc12: gpioc::PC12<Input<Floating>>,
-    pub pc13: gpioc::PC13<Input<Floating>>,
     pub pc14: gpioc::PC14<Input<Floating>>,
     pub pc15: gpioc::PC15<Input<Floating>>,
 
