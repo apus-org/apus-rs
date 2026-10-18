@@ -50,3 +50,6 @@ rtt-target = "0.6.2"
 # Cargo.lock pins it (cargo update -p usbd-hid-descriptors --precise 0.1.2)
 usbd-hid = "0.6.1"
 usbd-serial = "0.1.1"
+w5500-ll = { version = "0.13.0", features = ["eh1"] }
+w5500-hl = "0.12.0"
+w5500-dhcp = "0.7.0"

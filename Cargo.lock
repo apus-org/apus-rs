@@ -27,6 +27,9 @@ dependencies = [
  "usb-device",
  "usbd-hid",
  "usbd-serial",
+ "w5500-dhcp",
+ "w5500-hl",
+ "w5500-ll",
 ]
 
 [[package]]
@@ -631,4 +634,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de437e2a6208b014ab52972a27e59b33fa2920d3e00fe05026167a1c509d19cc"
 dependencies = [
  "vcell",
+]
+
+[[package]]
+name = "w5500-dhcp"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a45835364e6e32f610a4aced5eef3d7cdffff94e9dc60bd8a92989e4442b2ea6"
+dependencies = [
+ "w5500-hl",
+]
+
+[[package]]
+name = "w5500-hl"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acf85c58c338dedab9c75a67f40564a0987356b6b6338335325b7bd51b5c535e"
+dependencies = [
+ "w5500-ll",
+]
+
+[[package]]
+name = "w5500-ll"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef4332c876837525e11b6949300fb7471ec8a2718a7df4fc66084f64feb28ca6"
+dependencies = [
+ "embedded-hal 1.0.0",
 ]
