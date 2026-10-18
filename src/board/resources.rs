@@ -2,7 +2,7 @@ use stm32f0xx_hal::{
     gpio::{gpioa, gpiob, gpioc, gpiod, gpiof, Floating, Input},
     pac,
     prelude::*,
-    rcc,
+    rcc::{self, HSEBypassMode, USBClockSource},
 };
 
 use crate::{
@@ -44,12 +44,18 @@ pub struct Peripherals {
 }
 
 impl Resources {
-    /// Sets the system clock to 48 MHz and splits the GPIO ports
+    /// Sets the system clock to 48 MHz from the 8 MHz crystal and splits the GPIO ports
     pub fn new(peripherals: pac::Peripherals) -> Self {
         let mut p = peripherals;
 
-        // configure clocks
-        let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
+        // configure clocks: 8 MHz crystal on PF0/PF1, PLL to 48 MHz, which also clocks USB
+        let mut rcc = p
+            .RCC
+            .configure()
+            .hse(8.mhz(), HSEBypassMode::NotBypassed)
+            .sysclk(48.mhz())
+            .usbsrc(USBClockSource::PLL)
+            .freeze(&mut p.FLASH);
 
         let gpioa = p.GPIOA.split(&mut rcc);
         let gpiob = p.GPIOB.split(&mut rcc);
@@ -180,8 +186,6 @@ impl Resources {
             // GPIOE leftovers
 
             // GPIOF leftovers
-            pf0: gpiof.pf0,
-            pf1: gpiof.pf1,
             pf2: gpiof.pf2,
             pf3: gpiof.pf3,
             pf6: gpiof.pf6,
@@ -363,8 +367,6 @@ pub struct FreePins {
     // GPIOE leftovers
 
     // GPIOF leftovers
-    pub pf0: gpiof::PF0<Input<Floating>>,
-    pub pf1: gpiof::PF1<Input<Floating>>,
     pub pf2: gpiof::PF2<Input<Floating>>,
     pub pf3: gpiof::PF3<Input<Floating>>,
     pub pf6: gpiof::PF6<Input<Floating>>,
