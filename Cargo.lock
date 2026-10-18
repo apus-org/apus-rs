@@ -18,6 +18,7 @@ dependencies = [
  "lm75",
  "mcp794xx",
  "mipidsi",
+ "nb 1.1.0",
  "panic-halt",
  "panic-rtt-target",
  "rtt-target",
