@@ -5,7 +5,6 @@ use data_bus::{DataBus, DataPins};
 use embedded_graphics::prelude::RgbColor;
 use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb565};
 use embedded_hal::delay::DelayNs;
-use mipidsi::interface::ParallelInterface;
 use mipidsi::{models::ST7789, Builder};
 use stm32f0xx_hal::gpio::{gpioe, gpiof, Floating, Input, Output, PushPull};
 use stm32f0xx_hal::prelude::_embedded_hal_gpio_OutputPin;
@@ -21,11 +20,7 @@ pub struct DisplayPoint {
 
 pub type DisplaySize = DisplayPoint;
 
-pub type ApusDisplay = mipidsi::Display<
-    ParallelInterface<DataBus, gpioe::PE9<Output<PushPull>>, gpioe::PE10<Output<PushPull>>>,
-    ST7789,
-    gpiof::PF10<Output<PushPull>>,
->;
+pub type ApusDisplay = mipidsi::Display<DataBus, ST7789, gpiof::PF10<Output<PushPull>>>;
 
 pub struct DisplayPins {
     pub db0: gpioe::PE0<Input<Floating>>,
@@ -69,7 +64,7 @@ pub fn init(pins: DisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
         // enable display (negative logic)
         let _ = n_cs.set_low();
 
-        let di = ParallelInterface::new(DataBus::new(data), d_c, n_wr);
+        let di = DataBus::new(data, d_c, n_wr);
         (di, n_reset)
     });
 

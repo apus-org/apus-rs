@@ -1,8 +1,22 @@
 use core::convert::Infallible;
 
-use mipidsi::interface::{InterfaceKind, OutputBus};
+use mipidsi::interface::{Interface, InterfaceKind};
 use stm32f0xx_hal::gpio::{gpioe, Output, PushPull};
 use stm32f0xx_hal::pac;
+
+const DATA: u32 = 0xFF;
+const D_C: u32 = 1 << 9;
+const N_WR: u32 = 1 << 10;
+
+/// `BSRR` bits that drive `pins` high
+const fn set(pins: u32) -> u32 {
+    pins
+}
+
+/// `BSRR` bits that drive `pins` low
+const fn reset(pins: u32) -> u32 {
+    pins << 16
+}
 
 /// DB0-DB7 of the display, wired to PE0-PE7
 pub struct DataPins {
@@ -16,35 +30,94 @@ pub struct DataPins {
     pub db7: gpioe::PE7<Output<PushPull>>,
 }
 
-/// 8-bit parallel data bus, one `BSRR` store per byte.
+/// 8080 bus of the display, two `BSRR` stores per byte.
 ///
-/// The data lines are contiguous on PE0-PE7, so a byte fits a single store: the
-/// low half-word raises the set bits, the high half-word lowers the rest.
+/// DB0-DB7, D/C and WR all sit on GPIOE, so one store puts a byte on the data lines and
+/// pulls WR low at the same time, and a second raises WR, which latches the byte.
 pub struct DataBus {
     _pins: DataPins,
+    _d_c: gpioe::PE9<Output<PushPull>>,
+    _n_wr: gpioe::PE10<Output<PushPull>>,
 }
 
 impl DataBus {
-    pub fn new(pins: DataPins) -> Self {
-        Self { _pins: pins }
+    pub fn new(
+        pins: DataPins,
+        d_c: gpioe::PE9<Output<PushPull>>,
+        n_wr: gpioe::PE10<Output<PushPull>>,
+    ) -> Self {
+        Self {
+            _pins: pins,
+            _d_c: d_c,
+            _n_wr: n_wr,
+        }
     }
 }
 
-impl OutputBus for DataBus {
+#[inline(always)]
+fn bsrr(bits: u32) {
+    // SAFETY: BSRR is write-only and stateless. Only bits of the owned PE0-PE7, PE9 and
+    // PE10 are ever set.
+    unsafe {
+        (*pac::GPIOE::ptr()).bsrr.write(|w| w.bits(bits));
+    }
+}
+
+/// The store that drives `byte` onto DB0-DB7 and pulls WR low
+#[inline(always)]
+fn byte_with_wr_low(byte: u8) -> u32 {
+    let byte = byte as u32;
+    set(byte) | reset(!byte & DATA) | reset(N_WR)
+}
+
+#[inline(always)]
+fn write(word: u32) {
+    bsrr(word);
+    bsrr(set(N_WR));
+}
+
+impl Interface for DataBus {
     type Word = u8;
     type Error = Infallible;
 
     const KIND: InterfaceKind = InterfaceKind::Parallel8Bit;
 
-    #[inline(always)]
-    fn set_value(&mut self, value: u8) -> Result<(), Infallible> {
-        let value = value as u32;
-        let bits = value | ((!value & 0xFF) << 16);
+    fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Infallible> {
+        bsrr(reset(D_C));
+        write(byte_with_wr_low(command));
+        bsrr(set(D_C));
 
-        // SAFETY: BSRR is write-only and stateless. Bits 8..16 and 24..32 stay
-        // clear, so only the owned PE0-PE7 are driven.
-        unsafe {
-            (*pac::GPIOE::ptr()).bsrr.write(|w| w.bits(bits));
+        for &arg in args {
+            write(byte_with_wr_low(arg));
+        }
+
+        Ok(())
+    }
+
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [u8; N]>,
+    ) -> Result<(), Infallible> {
+        for pixel in pixels {
+            for byte in pixel {
+                write(byte_with_wr_low(byte));
+            }
+        }
+
+        Ok(())
+    }
+
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [u8; N],
+        count: u32,
+    ) -> Result<(), Infallible> {
+        let words = pixel.map(byte_with_wr_low);
+
+        for _ in 0..count {
+            for word in words {
+                write(word);
+            }
         }
 
         Ok(())
