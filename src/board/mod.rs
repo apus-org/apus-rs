@@ -17,6 +17,7 @@ use crate::{
     peripherals::{
         can::{self, CanBus},
         i2c::i2c1::{self, I2c1},
+        serial::usart3::{self, Usart3},
         spi::spi1,
     },
 };
@@ -30,9 +31,12 @@ use critical_section::Mutex;
 use embedded_hal_bus::i2c::CriticalSectionDevice;
 use embedded_hal_bus::spi::ExclusiveDevice;
 
-use stm32f0xx_hal::{adc::Adc, pac, rcc};
+use stm32f0xx_hal::{adc::Adc, pac, rcc, time::Bps};
 
 type BoardI2c = CriticalSectionDevice<'static, I2c1>;
+
+/// Baud rate of [`Board::vcom`]
+pub const VCOM_BAUD_RATE: u32 = 115_200;
 
 pub struct Board {
     pub leds: Leds,
@@ -45,6 +49,7 @@ pub struct Board {
     pub temperature: ApusTemperature<BoardI2c>,
     pub rtc: ApusRtc<BoardI2c>,
     pub can: CanBus,
+    pub vcom: Usart3,
 
     pub header: ArduinoHeader,
     pub peripherals: BoardPeripherals,
@@ -85,6 +90,14 @@ impl Board {
         let (can_instance, can_mode) = can::init(res.peripherals.can, res.can, &mut rcc);
         let can = CanBus::new(can_instance, can_mode);
 
+        // vcom construction (USART3 to the FTDI USB-UART)
+        let vcom = usart3::init(
+            res.peripherals.usart3,
+            res.usart3,
+            Bps(VCOM_BAUD_RATE),
+            &mut rcc,
+        );
+
         // led construction
         let leds = Leds::new(res.leds);
 
@@ -112,6 +125,7 @@ impl Board {
             temperature,
             rtc,
             can,
+            vcom,
 
             header: res.header,
             peripherals: BoardPeripherals {
