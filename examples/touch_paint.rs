@@ -8,7 +8,7 @@ use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, SPI1_FREQUENCY};
 use apus::bsp::{
     delay::BusyDelay,
     display::{self, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
@@ -37,7 +37,8 @@ fn main() -> ! {
     let mut display = display::init(res.display, delay_display);
 
     // Initialize SPI1 and get the bus and CS pin
-    let (spi_bus, cs_pin) = spi1::init(res.peripherals.spi1, res.spi1, &mut res.rcc);
+    let (spi_bus, cs_pin) =
+        spi1::init(res.peripherals.spi1, res.spi1, SPI1_FREQUENCY, &mut res.rcc);
 
     // Create a small blocking delay helper for the main loop
     let sys_clock_hz = res.rcc.clocks.sysclk().0;

@@ -31,12 +31,22 @@ use critical_section::Mutex;
 use embedded_hal_bus::i2c::CriticalSectionDevice;
 use embedded_hal_bus::spi::ExclusiveDevice;
 
-use stm32f0xx_hal::{adc::Adc, pac, rcc, time::Bps};
+use stm32f0xx_hal::{
+    adc::Adc,
+    pac, rcc,
+    time::{Bps, KiloHertz},
+};
 
 type BoardI2c = CriticalSectionDevice<'static, I2c1>;
 
 /// Baud rate of [`Board::vcom`]
-pub const VCOM_BAUD_RATE: u32 = 115_200;
+pub const VCOM_BAUD_RATE: Bps = Bps(115_200);
+
+/// Clock of I2C1, shared by the temperature sensor and the RTC
+pub const I2C1_FREQUENCY: KiloHertz = KiloHertz(100);
+
+/// Clock of SPI1 to the touch controller (APB clock / 128)
+pub const SPI1_FREQUENCY: KiloHertz = KiloHertz(375);
 
 pub struct Board {
     pub leds: Leds,
@@ -66,7 +76,7 @@ impl Board {
         let display = display::init(res.display, BusyDelay::new(sys_clock_hz));
 
         // spi1 construction (touch controller is the only device on SPI1)
-        let (spi1_bus, n_cs) = spi1::init(res.peripherals.spi1, res.spi1, &mut rcc);
+        let (spi1_bus, n_cs) = spi1::init(res.peripherals.spi1, res.spi1, SPI1_FREQUENCY, &mut rcc);
 
         // touch driver owns the SPI1 bus exclusively
         let spi1_cs_delay = BusyDelay::new(sys_clock_hz);
@@ -81,7 +91,7 @@ impl Board {
         );
 
         // i2c1 construction (shared by the temperature sensor and RTC)
-        let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, &mut rcc);
+        let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut rcc);
         let i2c1_bus_static = Self::install_i2c1_singleton(i2c1_bus);
         let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
         let rtc = rtc::new(CriticalSectionDevice::new(i2c1_bus_static));
@@ -91,12 +101,7 @@ impl Board {
         let can = CanBus::new(can_instance, can_mode);
 
         // vcom construction (USART3 to the FTDI USB-UART)
-        let vcom = usart3::init(
-            res.peripherals.usart3,
-            res.usart3,
-            Bps(VCOM_BAUD_RATE),
-            &mut rcc,
-        );
+        let vcom = usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
 
         // led construction
         let leds = Leds::new(res.leds);

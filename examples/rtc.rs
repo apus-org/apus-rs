@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, I2C1_FREQUENCY};
 use apus::bsp::{
     delay::BusyDelay,
     rtc::{self, DateTimeAccess, NaiveDate},
@@ -23,7 +23,7 @@ fn main() -> ! {
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
 
-    let i2c = i2c1::init(res.peripherals.i2c1, res.i2c1, &mut res.rcc);
+    let i2c = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut res.rcc);
     let mut rtc = rtc::new(i2c);
 
     // Reset the clock to a known time on every run, then start it.
