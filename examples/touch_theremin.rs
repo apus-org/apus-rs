@@ -7,7 +7,7 @@ use embedded_graphics::prelude::RgbColor;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, SPI1_FREQUENCY};
 use apus::bsp::{
     buzzer::Buzzer,
     delay::BusyDelay,
@@ -49,7 +49,8 @@ fn main() -> ! {
 
     let mut display = display::init(res.display, BusyDelay::new(sys_clock_hz));
 
-    let (spi_bus, cs_pin) = spi1::init(res.peripherals.spi1, res.spi1, &mut res.rcc);
+    let (spi_bus, cs_pin) =
+        spi1::init(res.peripherals.spi1, res.spi1, SPI1_FREQUENCY, &mut res.rcc);
     let spi_dev = ExclusiveDevice::new(spi_bus, cs_pin, BusyDelay::new(sys_clock_hz)).unwrap();
     let mut touch = Touch::new(
         spi_dev,

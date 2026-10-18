@@ -11,7 +11,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::{resources::Resources, VCOM_BAUD_RATE};
 use apus::peripherals::serial::usart3;
 
-use stm32f0xx_hal::{pac, prelude::*, time::Bps};
+use stm32f0xx_hal::{pac, prelude::*};
 
 #[entry]
 fn main() -> ! {
@@ -24,11 +24,11 @@ fn main() -> ! {
     let mut vcom = usart3::init(
         res.peripherals.usart3,
         res.usart3,
-        Bps(VCOM_BAUD_RATE),
+        VCOM_BAUD_RATE,
         &mut res.rcc,
     );
 
-    let _ = writeln!(vcom, "APUS VCOM echo, {} baud\r", VCOM_BAUD_RATE);
+    let _ = writeln!(vcom, "APUS VCOM echo, {} baud\r", VCOM_BAUD_RATE.0);
 
     loop {
         match block!(vcom.read()) {

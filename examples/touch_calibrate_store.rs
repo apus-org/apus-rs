@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, I2C1_FREQUENCY, SPI1_FREQUENCY};
 use apus::bsp::{
     delay::BusyDelay,
     display::{self, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
@@ -42,7 +42,8 @@ fn main() -> ! {
     let mut display = display::init(res.display, BusyDelay::new(sys_clock_hz));
 
     // touch controller on SPI1
-    let (spi_bus, cs_pin) = spi1::init(res.peripherals.spi1, res.spi1, &mut res.rcc);
+    let (spi_bus, cs_pin) =
+        spi1::init(res.peripherals.spi1, res.spi1, SPI1_FREQUENCY, &mut res.rcc);
     let spi_dev = ExclusiveDevice::new(spi_bus, cs_pin, BusyDelay::new(sys_clock_hz)).unwrap();
     let mut touch = Touch::new(
         spi_dev,
@@ -54,7 +55,7 @@ fn main() -> ! {
     );
 
     // MCP79410 EEPROM/RTC
-    let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, &mut res.rcc);
+    let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut res.rcc);
     let mut eeprom = rtc::new(i2c1_bus);
 
     let mut delay = BusyDelay::new(sys_clock_hz);

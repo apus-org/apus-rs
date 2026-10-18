@@ -2,6 +2,7 @@ use stm32f0xx_hal::{
     gpio::{self, gpioe, Floating, Input, Output, PushPull},
     pac, rcc,
     spi::{self, Spi},
+    time::KiloHertz,
 };
 
 // Concrete SPI1 pin types
@@ -15,7 +16,6 @@ pub type Spi1 = Spi<pac::SPI1, Spi1Sck, Spi1Miso, Spi1Mosi, spi::EightBit>;
 pub type Spi1Cs = gpioe::PE12<Output<PushPull>>;
 
 use cortex_m::interrupt;
-use stm32f0xx_hal::prelude::*;
 
 /// Pins of SPI1 and the touch controller's CS, unconfigured
 pub struct Spi1Pins {
@@ -25,8 +25,14 @@ pub struct Spi1Pins {
     pub mosi: gpioe::PE15<Input<Floating>>,
 }
 
-/// Initialize SPI1 with PE13/PE14/PE15 and PE12 as CS, return the bus and the CS pin
-pub fn init(spi1_peripheral: pac::SPI1, pins: Spi1Pins, rcc: &mut rcc::Rcc) -> (Spi1, Spi1Cs) {
+/// Initialize SPI1 with PE13/PE14/PE15 and PE12 as CS at `frequency`, return the bus and the
+/// CS pin
+pub fn init(
+    spi1_peripheral: pac::SPI1,
+    pins: Spi1Pins,
+    frequency: KiloHertz,
+    rcc: &mut rcc::Rcc,
+) -> (Spi1, Spi1Cs) {
     let n_cs = pins.n_cs;
     let (spi1, cs_pin) = interrupt::free(|cs| {
         let sck = pins.sck.into_alternate_af1(cs);
@@ -40,10 +46,7 @@ pub fn init(spi1_peripheral: pac::SPI1, pins: Spi1Pins, rcc: &mut rcc::Rcc) -> (
             phase: spi::Phase::CaptureOnFirstTransition,
         };
 
-        // approximate prescaler=128 for 48 MHz pclk -> 375 kHz
-        let speed = 375.khz();
-
-        let spi1 = Spi::spi1(spi1_peripheral, pins, mode, speed, rcc);
+        let spi1 = Spi::spi1(spi1_peripheral, pins, mode, frequency, rcc);
 
         let n_cs = n_cs.into_push_pull_output(cs);
 

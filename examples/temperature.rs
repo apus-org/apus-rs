@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, I2C1_FREQUENCY};
 use apus::bsp::{delay::BusyDelay, temperature};
 use apus::peripherals::i2c::i2c1;
 use apus::prelude::*;
@@ -21,7 +21,7 @@ fn main() -> ! {
     let mut res = Resources::new(p);
 
     // MCP9803 is the only I2C bus consumer here
-    let i2c = i2c1::init(res.peripherals.i2c1, res.i2c1, &mut res.rcc);
+    let i2c = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut res.rcc);
     let mut temperature = temperature::new(i2c);
 
     if temperature.enable().is_err() {
