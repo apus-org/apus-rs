@@ -11,7 +11,9 @@ use crate::{
         display::DisplayPins,
         leds::{LedPins, RgbPins},
     },
-    peripherals::{can::CanPins, i2c::i2c1::I2c1Pins, spi::spi1::Spi1Pins},
+    peripherals::{
+        can::CanPins, i2c::i2c1::I2c1Pins, serial::usart3::Usart3Pins, spi::spi1::Spi1Pins,
+    },
 };
 
 /// The whole board, grouped by what each part is wired to and left unconfigured
@@ -23,6 +25,7 @@ pub struct Resources {
     pub spi1: Spi1Pins,
     pub i2c1: I2c1Pins,
     pub can: CanPins,
+    pub usart3: Usart3Pins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
@@ -36,6 +39,7 @@ pub struct Peripherals {
     pub i2c1: pac::I2C1,
     pub adc: pac::ADC,
     pub can: pac::CAN,
+    pub usart3: pac::USART3,
     pub free: FreePeripherals,
 }
 
@@ -107,6 +111,12 @@ impl Resources {
             mode: gpioc.pc13,
         };
 
+        // wired to the FTDI USB-UART of the VCOM port
+        let usart3 = Usart3Pins {
+            tx: gpiod.pd8,
+            rx: gpiod.pd9,
+        };
+
         // pins routed to the arduino shield header
         let header = ArduinoHeader {
             d0: gpioa.pa10,
@@ -160,8 +170,6 @@ impl Resources {
             pd5: gpiod.pd5,
             pd6: gpiod.pd6,
             pd7: gpiod.pd7,
-            pd8: gpiod.pd8,
-            pd9: gpiod.pd9,
             pd10: gpiod.pd10,
             pd11: gpiod.pd11,
             pd12: gpiod.pd12,
@@ -200,7 +208,6 @@ impl Resources {
             syscfg: p.SYSCFG,
             usart1: p.USART1,
             usart2: p.USART2,
-            usart3: p.USART3,
             usart4: p.USART4,
             rtc: p.RTC,
             tim15: p.TIM15,
@@ -223,6 +230,7 @@ impl Resources {
             spi1,
             i2c1,
             can,
+            usart3,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             header,
@@ -232,6 +240,7 @@ impl Resources {
                 i2c1: p.I2C1,
                 adc: p.ADC,
                 can: p.CAN,
+                usart3: p.USART3,
                 free: free_peripherals,
             },
             rcc,
@@ -258,7 +267,6 @@ pub struct FreePeripherals {
     pub syscfg: pac::SYSCFG,
     pub usart1: pac::USART1,
     pub usart2: pac::USART2,
-    pub usart3: pac::USART3,
     pub usart4: pac::USART4,
     pub rtc: pac::RTC,
     pub tim15: pac::TIM15,
@@ -345,8 +353,6 @@ pub struct FreePins {
     pub pd5: gpiod::PD5<Input<Floating>>,
     pub pd6: gpiod::PD6<Input<Floating>>,
     pub pd7: gpiod::PD7<Input<Floating>>,
-    pub pd8: gpiod::PD8<Input<Floating>>,
-    pub pd9: gpiod::PD9<Input<Floating>>,
     pub pd10: gpiod::PD10<Input<Floating>>,
     pub pd11: gpiod::PD11<Input<Floating>>,
     pub pd12: gpiod::PD12<Input<Floating>>,
