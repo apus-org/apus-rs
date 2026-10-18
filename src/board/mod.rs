@@ -15,6 +15,7 @@ use crate::{
         touch::{self, Touch},
     },
     peripherals::{
+        can::{self, CanBus},
         i2c::i2c1::{self, I2c1},
         spi::spi1,
     },
@@ -43,6 +44,7 @@ pub struct Board {
     pub touch: Touch,
     pub temperature: ApusTemperature<BoardI2c>,
     pub rtc: ApusRtc<BoardI2c>,
+    pub can: CanBus,
 
     pub header: ArduinoHeader,
     pub peripherals: BoardPeripherals,
@@ -79,6 +81,10 @@ impl Board {
         let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
         let rtc = rtc::new(CriticalSectionDevice::new(i2c1_bus_static));
 
+        // can construction
+        let (can_instance, can_mode) = can::init(res.peripherals.can, res.can, &mut rcc);
+        let can = CanBus::new(can_instance, can_mode);
+
         // led construction
         let leds = Leds::new(res.leds);
 
@@ -105,6 +111,7 @@ impl Board {
             touch,
             temperature,
             rtc,
+            can,
 
             header: res.header,
             peripherals: BoardPeripherals {
