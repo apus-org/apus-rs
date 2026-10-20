@@ -11,17 +11,17 @@ pub const MIN_VALUE: MilliVolts = 0;
 
 pub struct Potentiometer {
     pin: gpioc::PC4<Analog>,
-    adc: adc::Adc,
 }
 
 impl Potentiometer {
-    pub fn new(pin: gpioc::PC4<Input<Floating>>, adc: adc::Adc) -> Self {
+    pub fn new(pin: gpioc::PC4<Input<Floating>>) -> Self {
         let pin = interrupt::free(|cs| pin.into_analog(cs));
 
-        Self { pin, adc }
+        Self { pin }
     }
 
-    pub fn read(&mut self) -> MilliVolts {
-        self.adc.read_abs_mv(&mut self.pin)
+    /// Converts the wiper voltage on `adc`, which other channels can use in between
+    pub fn read(&mut self, adc: &mut adc::Adc) -> MilliVolts {
+        adc.read_abs_mv(&mut self.pin)
     }
 }

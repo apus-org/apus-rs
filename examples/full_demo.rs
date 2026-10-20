@@ -102,7 +102,7 @@ fn main() -> ! {
         }
 
         // potentiometer bar only redrawn on meaningful changes
-        let poti_current_value = board.potentiometer.read();
+        let poti_current_value = board.potentiometer.read(&mut board.adc);
         let poti_diff = poti_current_value.abs_diff(poti_previous_value) as u32;
         if poti_diff.saturating_mul(100) / MAX_VALUE as u32 >= POTI_THRESHOLD_PERCENT {
             let prev_w =

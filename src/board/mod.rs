@@ -64,6 +64,7 @@ pub struct Board {
     pub leds: Leds,
     pub buttons: Buttons,
     pub display: ApusDisplay,
+    pub adc: Adc,
     pub potentiometer: Potentiometer,
     pub buzzer: Buzzer,
     pub delay: BusyDelay,
@@ -141,9 +142,11 @@ impl Board {
         // button construction
         let buttons = Buttons::new(res.buttons);
 
-        // poti construction
+        // adc construction (shared by the potentiometer and the analog header pins)
         let adc = Adc::new(res.peripherals.adc, &mut rcc);
-        let potentiometer = Potentiometer::new(res.potentiometer, adc);
+
+        // poti construction
+        let potentiometer = Potentiometer::new(res.potentiometer);
 
         // buzzer construction
         let buzzer = Buzzer::new(res.buzzer);
@@ -155,6 +158,7 @@ impl Board {
             leds,
             buttons,
             display,
+            adc,
             potentiometer,
             buzzer,
             delay,
