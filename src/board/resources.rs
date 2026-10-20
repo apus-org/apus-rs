@@ -10,6 +10,7 @@ use crate::{
         buttons::ButtonPins,
         display::DisplayPins,
         leds::{LedPins, RgbPins},
+        touch::TouchPins,
     },
     peripherals::{
         can::CanPins,
@@ -28,6 +29,7 @@ pub struct Resources {
     pub buttons: ButtonPins,
     pub display: DisplayPins,
     pub spi1: Spi1Pins,
+    pub touch: TouchPins,
     pub i2c1: I2c1Pins,
     pub can: CanPins,
     pub usart3: Usart3Pins,
@@ -121,6 +123,12 @@ impl Resources {
             mosi: gpioe.pe15,
         };
 
+        // status lines of the touch controller
+        let touch = TouchPins {
+            penirq: gpiof.pf2,
+            busy: gpiof.pf3,
+        };
+
         // shared by the temperature sensor and RTC
         let i2c1 = I2c1Pins {
             scl: gpiob.pb6,
@@ -205,8 +213,6 @@ impl Resources {
         let free_pins = FreePins {
             pd11: gpiod.pd11,
             pd12: gpiod.pd12,
-            pf2: gpiof.pf2,
-            pf3: gpiof.pf3,
         };
 
         // board-peripherals that are unused
@@ -246,6 +252,7 @@ impl Resources {
             buttons,
             display,
             spi1,
+            touch,
             i2c1,
             can,
             usart3,
@@ -380,8 +387,4 @@ pub struct FreePins {
     pub pd11: gpiod::PD11<Input<Floating>>,
     /// PD12 · VCOM RTS
     pub pd12: gpiod::PD12<Input<Floating>>,
-    /// PF2 · touch pen interrupt
-    pub pf2: gpiof::PF2<Input<Floating>>,
-    /// PF3 · touch busy
-    pub pf3: gpiof::PF3<Input<Floating>>,
 }

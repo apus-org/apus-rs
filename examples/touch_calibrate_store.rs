@@ -47,6 +47,7 @@ fn main() -> ! {
     let spi_dev = ExclusiveDevice::new(spi_bus, cs_pin, BusyDelay::new(sys_clock_hz)).unwrap();
     let mut touch = Touch::new(
         spi_dev,
+        res.touch,
         touch::DEFAULT_THRESHOLD,
         DisplaySize {
             x: DISPLAY_WIDTH,
