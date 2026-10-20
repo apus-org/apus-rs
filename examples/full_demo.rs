@@ -44,7 +44,7 @@ fn main() -> ! {
     let mut board = Board::new(p);
 
     // start sensors
-    if board.temperature.enable().is_err() {
+    if board.temperature.sensor.enable().is_err() {
         rprintln!("failed to enable temperature sensor");
     }
     let datetime = NaiveDate::from_ymd_opt(2002, 6, 10)
@@ -124,7 +124,7 @@ fn main() -> ! {
         // temperature + time
         if tick.is_multiple_of(SENSOR_PERIOD_TICKS) {
             let mut line: String<32> = String::new();
-            match board.temperature.read_temperature() {
+            match board.temperature.sensor.read_temperature() {
                 Ok(c) => {
                     let _ = write!(line, "temp:{:7.2} C", c);
                     let _ =

@@ -11,7 +11,7 @@ use crate::{
         leds::Leds,
         potentiometer::Potentiometer,
         rtc::Rtc,
-        temperature::{self, ApusTemperature},
+        temperature::Temperature,
         touch::{self, Touch},
     },
     peripherals::{
@@ -67,7 +67,7 @@ pub struct Board {
     pub buzzer: Buzzer,
     pub delay: BusyDelay,
     pub touch: Touch,
-    pub temperature: ApusTemperature<BoardI2c>,
+    pub temperature: Temperature<BoardI2c>,
     pub rtc: Rtc<BoardI2c>,
 
     pub can: CanBus,
@@ -107,7 +107,10 @@ impl Board {
         // i2c1 construction (shared by the temperature sensor and RTC)
         let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut rcc);
         let i2c1_bus_static = Self::install_i2c1_singleton(i2c1_bus);
-        let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
+        let temperature = Temperature::new(
+            CriticalSectionDevice::new(i2c1_bus_static),
+            res.temperature_alert,
+        );
         let rtc = Rtc::new(CriticalSectionDevice::new(i2c1_bus_static), res.rtc_mfp);
 
         // can construction
