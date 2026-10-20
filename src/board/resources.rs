@@ -13,7 +13,7 @@ use crate::{
     },
     peripherals::{
         can::CanPins, i2c::i2c1::I2c1Pins, serial::usart3::Usart3Pins, spi::spi1::Spi1Pins,
-        usb::UsbPins,
+        swd::SwdPins, usb::UsbPins,
     },
 };
 
@@ -31,6 +31,7 @@ pub struct Resources {
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
+    pub swd: SwdPins,
     pub unconnected: UnconnectedPins,
     pub pins: FreePins,
     pub peripherals: Peripherals,
@@ -159,6 +160,11 @@ impl Resources {
             sda: gpiob.pb11,
         };
 
+        let swd = SwdPins {
+            swdio: gpioa.pa13,
+            swclk: gpioa.pa14,
+        };
+
         let unconnected = UnconnectedPins {
             pb4: gpiob.pb4,
             pc3: gpioc.pc3,
@@ -180,8 +186,6 @@ impl Resources {
 
         // pins wired on the board that have no place yet
         let free_pins = FreePins {
-            pa13: gpioa.pa13,
-            pa14: gpioa.pa14,
             pc10: gpioc.pc10,
             pc11: gpioc.pc11,
             pd3: gpiod.pd3,
@@ -238,6 +242,7 @@ impl Resources {
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             header,
+            swd,
             unconnected,
             pins: free_pins,
             peripherals: Peripherals {
@@ -357,10 +362,6 @@ pub struct UnconnectedPins {
 
 /// Pins wired on the board that have no place yet
 pub struct FreePins {
-    /// PA13 · SWDIO of the debug port
-    pub pa13: gpioa::PA13<Input<Floating>>,
-    /// PA14 · SWCLK of the debug port
-    pub pa14: gpioa::PA14<Input<Floating>>,
     /// PC10 · UART connector TX
     pub pc10: gpioc::PC10<Input<Floating>>,
     /// PC11 · UART connector RX

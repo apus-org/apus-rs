@@ -2,4 +2,5 @@ pub mod can;
 pub mod i2c;
 pub mod serial;
 pub mod spi;
+pub mod swd;
 pub mod usb;
