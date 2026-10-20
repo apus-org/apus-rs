@@ -6,7 +6,7 @@ use nb::block;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::{delay::BusyDelay, leds::Leds};
 use apus::peripherals::can::{self, CanBus};
 use apus::prelude::*;
@@ -40,7 +40,12 @@ fn main() -> ! {
 
     let sys_clock_hz = res.rcc.clocks.sysclk().0;
     let mut delay = BusyDelay::new(sys_clock_hz);
-    let mut leds = Leds::new(res.leds);
+    let mut leds = Leds::new(
+        res.leds,
+        res.peripherals.tim3,
+        RGB_PWM_FREQUENCY,
+        &mut res.rcc,
+    );
 
     let pclk_hz = res.rcc.clocks.pclk().0;
     let (can_instance, can_mode) = can::init(res.peripherals.can, res.can, &mut res.rcc);

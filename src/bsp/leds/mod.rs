@@ -1,8 +1,18 @@
 pub mod led;
+pub mod pwm_led;
 
 use cortex_m::interrupt;
+use embedded_graphics::pixelcolor::{Rgb888, RgbColor};
+use embedded_hal::pwm::SetDutyCycle;
 use led::Led;
-use stm32f0xx_hal::gpio::{gpioc, Floating, Input, Output, PushPull};
+use pwm_led::PwmLed;
+use stm32f0xx_hal::{
+    gpio::{gpioc, Floating, Input, Output, PushPull},
+    pac, pwm,
+    pwm::{C1, C2, C3},
+    rcc::Rcc,
+    time::Hertz,
+};
 
 use led::LedLike;
 
@@ -26,18 +36,21 @@ pub struct Leds {
     pub led3: Led<gpioc::PC0<Output<PushPull>>>,
     pub led4: Led<gpioc::PC1<Output<PushPull>>>,
     pub led5: Led<gpioc::PC2<Output<PushPull>>>,
-    pub rgb: Rgb,
+    pub rgb: RgbLed,
 }
 
-/// The three channels of the RGB LED
-pub struct Rgb {
-    pub red: Led<gpioc::PC6<Output<PushPull>>>,
-    pub green: Led<gpioc::PC7<Output<PushPull>>>,
-    pub blue: Led<gpioc::PC8<Output<PushPull>>>,
+/// The three channels of the RGB LED, dimmable on TIM3
+pub struct RgbLed {
+    pub red: PwmLed<C1>,
+    pub green: PwmLed<C2>,
+    pub blue: PwmLed<C3>,
 }
 
 impl Leds {
-    pub fn new(pins: LedPins) -> Self {
+    /// Takes TIM3 for the RGB LED, which runs at `rgb_frequency`
+    pub fn new(pins: LedPins, tim3: pac::TIM3, rgb_frequency: Hertz, rcc: &mut Rcc) -> Self {
+        let rgb = RgbLed::new(pins.rgb, tim3, rgb_frequency, rcc);
+
         let mut leds = interrupt::free(|cs| {
             let led3 = pins.led3.into_push_pull_output(cs);
             let led4 = pins.led4.into_push_pull_output(cs);
@@ -47,7 +60,7 @@ impl Leds {
                 led3: Led::new(led3),
                 led4: Led::new(led4),
                 led5: Led::new(led5),
-                rgb: Rgb::new(pins.rgb),
+                rgb,
             }
         });
 
@@ -75,24 +88,36 @@ impl Leds {
     }
 }
 
-impl Rgb {
-    pub fn new(pins: RgbPins) -> Self {
-        let mut rgb = interrupt::free(|cs| {
-            let red = pins.red.into_push_pull_output(cs);
-            let green = pins.green.into_push_pull_output(cs);
-            let blue = pins.blue.into_push_pull_output(cs);
-
-            Self {
-                red: Led::new(red),
-                green: Led::new(green),
-                blue: Led::new(blue),
-            }
+impl RgbLed {
+    /// Runs TIM3 at `frequency` with all channels off
+    pub fn new(pins: RgbPins, tim3: pac::TIM3, frequency: Hertz, rcc: &mut Rcc) -> Self {
+        let pins = interrupt::free(|cs| {
+            (
+                pins.red.into_alternate_af0(cs),
+                pins.green.into_alternate_af0(cs),
+                pins.blue.into_alternate_af0(cs),
+            )
         });
+        let (red, green, blue) = pwm::tim3(tim3, pins, rcc, frequency);
 
-        // initialise all channels as off
-        rgb.all_mut().iter_mut().for_each(|led| led.off());
+        Self {
+            red: PwmLed::new(red),
+            green: PwmLed::new(green),
+            blue: PwmLed::new(blue),
+        }
+    }
 
-        rgb
+    /// Sets all three channels, 0 is off and 255 full brightness
+    pub fn set_color(&mut self, color: Rgb888) {
+        let _ = self
+            .red
+            .set_duty_cycle_fraction(color.r().into(), u8::MAX.into());
+        let _ = self
+            .green
+            .set_duty_cycle_fraction(color.g().into(), u8::MAX.into());
+        let _ = self
+            .blue
+            .set_duty_cycle_fraction(color.b().into(), u8::MAX.into());
     }
 
     /// All channels as a mutable slice for iteration
