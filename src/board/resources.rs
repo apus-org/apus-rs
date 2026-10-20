@@ -168,8 +168,6 @@ impl Resources {
             a3: gpioa.pa6,
             a4: gpiob.pb0,
             a5: gpiob.pb1,
-            scl: gpiob.pb10,
-            sda: gpiob.pb11,
         };
 
         let swd = SwdPins {
@@ -179,6 +177,8 @@ impl Resources {
 
         let unconnected = UnconnectedPins {
             pb4: gpiob.pb4,
+            pb10: gpiob.pb10,
+            pb11: gpiob.pb11,
             pc3: gpioc.pc3,
             pc5: gpioc.pc5,
             pc12: gpioc.pc12,
@@ -340,19 +340,19 @@ pub struct ArduinoHeader {
     pub a2: gpioa::PA4<Input<Floating>>,
     /// PA6 · ADC_IN6
     pub a3: gpioa::PA6<Input<Floating>>,
-    /// PB0 · ADC_IN8, via SJ2
+    /// PB0 · ADC_IN8, via SJ2 (header pin A4/SDA)
     pub a4: gpiob::PB0<Input<Floating>>,
-    /// PB1 · ADC_IN9, via SJ1
+    /// PB1 · ADC_IN9, via SJ1 (header pin A5/SCL)
     pub a5: gpiob::PB1<Input<Floating>>,
-    /// PB10 · I2C2_SCL
-    pub scl: gpiob::PB10<Input<Floating>>,
-    /// PB11 · I2C2_SDA
-    pub sda: gpiob::PB11<Input<Floating>>,
 }
 
 /// Pins that are not connected on the board
 pub struct UnconnectedPins {
     pub pb4: gpiob::PB4<Input<Floating>>,
+    /// I2C2_SCL; reaches the header's A5/SCL only with SJ1 moved
+    pub pb10: gpiob::PB10<Input<Floating>>,
+    /// I2C2_SDA; reaches the header's A4/SDA only with SJ2 moved
+    pub pb11: gpiob::PB11<Input<Floating>>,
     pub pc3: gpioc::PC3<Input<Floating>>,
     pub pc5: gpioc::PC5<Input<Floating>>,
     pub pc12: gpioc::PC12<Input<Floating>>,
