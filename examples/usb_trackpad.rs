@@ -185,8 +185,10 @@ fn main() -> ! {
     let mut board = Board::new(p);
 
     rprintln!("touch each marker as it appears");
-    let calibration = board.touch.calibrate_from_display(&mut board.display);
-    board.touch.calibrate_from_data(calibration);
+    board
+        .touch
+        .calibrate_from_display(&mut board.display)
+        .unwrap();
 
     draw_layout(&mut board.display);
     start_usb(board.usb);

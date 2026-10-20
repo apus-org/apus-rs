@@ -20,9 +20,3 @@ impl DelayNs for BusyDelay {
         cortex_m::asm::delay(actual_cycles as u32);
     }
 }
-
-// Note: we intentionally implement the newer `DelayNs` trait (embedded-hal v1)
-// for BusyDelay above and pass BusyDelay directly into places that require
-// an eh1-compatible delay implementation. Avoid referencing the old
-// `embedded_hal::blocking` module here to prevent ambiguity between
-// embedded-hal versions in the dependency graph.

@@ -18,6 +18,9 @@ pub type ApusTouchDevice = embedded_hal_bus::spi::ExclusiveDevice<Spi1, Spi1Cs, 
 /// Concrete configured touch driver type used by the board.
 pub type ApusTouch = Tsc2046<ApusTouchDevice>;
 
+/// Error of the SPI device the touch controller sits on
+pub type TouchSpiError = <ApusTouchDevice as embedded_hal::spi::ErrorType>::Error;
+
 /// Status lines of the touch controller, unconfigured
 pub struct TouchPins {
     /// PF2 · pen interrupt, active low
@@ -87,7 +90,7 @@ impl TouchCalibrationData {
 #[derive(Debug)]
 pub enum TouchError {
     NotCalibrated,
-    SpiError,
+    Spi(TouchSpiError),
 }
 
 pub type TouchResult = Result<Option<TouchPoint3D>, TouchError>;
@@ -134,51 +137,40 @@ impl Touch {
         self.busy.is_high().unwrap_or(false)
     }
 
-    pub fn read_raw(
-        &mut self,
-    ) -> Result<Option<tsc2046::TouchPoint>, <ApusTouchDevice as embedded_hal::spi::ErrorType>::Error>
-    {
+    pub fn read_raw(&mut self) -> Result<Option<tsc2046::TouchPoint>, TouchSpiError> {
         self.touch.get_touch()
     }
 
     pub fn read(&mut self) -> TouchResult {
-        // Read raw touch data
-        let raw_touch = self.read_raw().map_err(|_| TouchError::SpiError)?;
+        let calibration = self.calibration_data.ok_or(TouchError::NotCalibrated)?;
 
-        // Check if calibration data is available
-        let calibration = self
-            .calibration_data
-            .as_mut()
-            .ok_or(TouchError::NotCalibrated)?;
-
-        // If no touch detected, return None
-        let raw_point = match raw_touch {
+        let raw_point = match self.read_raw().map_err(TouchError::Spi)? {
             // pressure value from touch display has inverted scale
             // meaning that low values represent higher pressure.
             // 0.0 is the maximum pressure value but can never actually be reached
             // in real measurements, but only in erroneous measurements.
             // Therefore, 0.0 is filtered out.
-            Some(tp) if tp.z > 0.0 => tp,
+            Some(point) if point.z > 0.0 => point,
             _ => return Ok(None),
         };
 
-        // Apply calibration transformation using u32 with clamping
-        let calibrated_x = {
-            let raw_x = raw_point.x.saturating_sub(calibration.offset.x) as u32;
-            let scaled_x = (raw_x as f32 * calibration.scale.x) as u32;
-            scaled_x.min(self.size.x as u32) as u16
-        };
-
-        let calibrated_y = {
-            let raw_y = raw_point.y.saturating_sub(calibration.offset.y) as u32;
-            let scaled_y = (raw_y as f32 * calibration.scale.y) as u32;
-            let inverted_y = (self.size.y as u32).saturating_sub(scaled_y);
-            inverted_y.min(self.size.y as u32) as u16
-        };
+        let x = scale_axis(
+            raw_point.x,
+            calibration.offset.x,
+            calibration.scale.x,
+            self.size.x,
+        );
+        let y = self.size.y
+            - scale_axis(
+                raw_point.y,
+                calibration.offset.y,
+                calibration.scale.y,
+                self.size.y,
+            );
 
         Ok(Some(TouchPoint3D {
-            x: calibrated_x,
-            y: calibrated_y,
+            x,
+            y,
             z: raw_point.z,
         }))
     }
@@ -187,114 +179,123 @@ impl Touch {
         self.touch.set_touch_threshold(touch_threshold);
     }
 
+    /// Shows a marker in each corner to be pressed, then applies and returns the calibration
     pub fn calibrate_from_display(
         &mut self,
         display: &mut impl DrawTarget<Color = Rgb565>,
-    ) -> TouchCalibrationData {
+    ) -> Result<TouchCalibrationData, TouchError> {
         const MARKER_SIZE: u16 = 20;
 
-        // Calibrate each corner
-        let top_left = self.calibrate_corner(display, 0, 0, MARKER_SIZE);
-        let top_right = self.calibrate_corner(display, self.size.x - MARKER_SIZE, 0, MARKER_SIZE);
-        let bottom_left = self.calibrate_corner(display, 0, self.size.y - MARKER_SIZE, MARKER_SIZE);
-        let bottom_right = self.calibrate_corner(
-            display,
-            self.size.x - MARKER_SIZE,
-            self.size.y - MARKER_SIZE,
-            MARKER_SIZE,
-        );
+        let left = 0;
+        let top = 0;
+        let right = self.size.x - MARKER_SIZE;
+        let bottom = self.size.y - MARKER_SIZE;
+        let marker = |x: u16, y: u16| {
+            Rectangle::new(
+                Point::new(i32::from(x), i32::from(y)),
+                Size::new(u32::from(MARKER_SIZE), u32::from(MARKER_SIZE)),
+            )
+        };
 
-        // Calculate average offset from all four corners
-        let x_offset = ((top_left.x as u32 + bottom_left.x as u32) / 2) as u16;
-        let y_offset = ((bottom_left.y as u32 + bottom_right.y as u32) / 2) as u16;
+        let top_left = self.calibrate_corner(display, marker(left, top))?;
+        let top_right = self.calibrate_corner(display, marker(right, top))?;
+        let bottom_left = self.calibrate_corner(display, marker(left, bottom))?;
+        let bottom_right = self.calibrate_corner(display, marker(right, bottom))?;
 
-        // Calculate scale
-        // Distance in touch coordinates between calibration points (average from both sides)
-        let touch_x_span_top = (top_right.x as i32 - top_left.x as i32).abs() as f32;
-        let touch_x_span_bottom = (bottom_right.x as i32 - bottom_left.x as i32).abs() as f32;
-        let touch_x_span = (touch_x_span_top + touch_x_span_bottom) / 2.0;
+        let span_x = mean_span(top_left.x, top_right.x, bottom_left.x, bottom_right.x);
+        let span_y = mean_span(top_left.y, bottom_left.y, top_right.y, bottom_right.y);
 
-        let touch_y_span_left = (bottom_left.y as i32 - top_left.y as i32).abs() as f32;
-        let touch_y_span_right = (bottom_right.y as i32 - top_right.y as i32).abs() as f32;
-        let touch_y_span = (touch_y_span_left + touch_y_span_right) / 2.0;
-
-        // Calculate scale factors
-        let x_scale = self.size.x as f32 / touch_x_span;
-        let y_scale = self.size.y as f32 / touch_y_span;
-
-        TouchCalibrationData {
+        let data = TouchCalibrationData {
             offset: TouchOffset {
-                x: x_offset,
-                y: y_offset,
+                x: mean(top_left.x, bottom_left.x),
+                y: mean(bottom_left.y, bottom_right.y),
             },
             scale: TouchScale {
-                x: x_scale,
-                y: y_scale,
+                x: f32::from(self.size.x) / span_x,
+                y: f32::from(self.size.y) / span_y,
             },
-        }
+        };
+        self.calibrate_from_data(data);
+
+        Ok(data)
     }
 
     pub fn calibrate_from_data(&mut self, data: TouchCalibrationData) {
         self.calibration_data = Some(data);
     }
 
-    // Helper function to calibrate a single corner by drawing a marker,
-    // sampling touch readings, averaging them, and clearing the marker.
+    /// Draws `marker`, averages the readings while it is pressed, waits for the release and
+    /// clears it again
     fn calibrate_corner(
         &mut self,
         display: &mut impl DrawTarget<Color = Rgb565>,
-        x: u16,
-        y: u16,
-        marker_size: u16,
-    ) -> TouchPoint2D {
+        marker: Rectangle,
+    ) -> Result<TouchPoint2D, TouchError> {
         const MARKER_COLOR: Rgb565 = Rgb565::WHITE;
         const CLEAR_COLOR: Rgb565 = Rgb565::BLACK;
-        const STYLE: PrimitiveStyle<Rgb565> = PrimitiveStyle::with_fill(MARKER_COLOR);
-        const NUM_TOUCH_SAMPLES: usize = 10; // Number of consecutive touch readings required
-        const NUM_RELEASE_SAMPLES: usize = 5; // Number of consecutive "no touch" readings required
+        // consecutive readings averaged while the marker is pressed
+        const TOUCH_SAMPLES: u32 = 10;
+        // consecutive readings without touch that count as released
+        const RELEASE_SAMPLES: u32 = 5;
 
-        // Draw marker rectangle at corner
-        let rect = Rectangle::new(
-            Point::new(x as i32, y as i32),
-            Size::new(marker_size as u32, marker_size as u32),
-        );
-        let _ = rect.draw_styled(&STYLE, display);
+        let _ = marker.draw_styled(&PrimitiveStyle::with_fill(MARKER_COLOR), display);
 
-        // Read multiple samples and average them, restarting if touch is released
-        let mut sum_x = 0u32;
-        let mut sum_y = 0u32;
-        let mut count = 0;
-
-        while count < NUM_TOUCH_SAMPLES {
-            if let Ok(Some(tp)) = self.read_raw() {
-                sum_x += tp.x as u32;
-                sum_y += tp.y as u32;
-                count += 1;
-            } else {
-                // Touch was released or error occurred, start over
-                sum_x = 0;
-                sum_y = 0;
-                count = 0;
+        let point = loop {
+            if let Some(point) = self.mean_raw(TOUCH_SAMPLES).map_err(TouchError::Spi)? {
+                break point;
             }
-        }
+        };
+        while !self
+            .untouched_raw(RELEASE_SAMPLES)
+            .map_err(TouchError::Spi)?
+        {}
 
-        // Wait for touch to be released for specified consecutive readings
-        let mut release_count = 0;
-        while release_count < NUM_RELEASE_SAMPLES {
-            if let Ok(None) = self.read_raw() {
-                release_count += 1;
-            } else {
-                release_count = 0;
-            }
-        }
+        let _ = marker.draw_styled(&PrimitiveStyle::with_fill(CLEAR_COLOR), display);
 
-        // Clear the marker
-        let _ = rect.draw_styled(&PrimitiveStyle::with_fill(CLEAR_COLOR), display);
-
-        // Return averaged touch point
-        let avg_x = (sum_x / NUM_TOUCH_SAMPLES as u32) as u16;
-        let avg_y = (sum_y / NUM_TOUCH_SAMPLES as u32) as u16;
-
-        TouchPoint2D { x: avg_x, y: avg_y }
+        Ok(point)
     }
+
+    /// Mean of `samples` raw readings in a row, or `None` if one of them finds no touch
+    fn mean_raw(&mut self, samples: u32) -> Result<Option<TouchPoint2D>, TouchSpiError> {
+        let mut sum_x = 0;
+        let mut sum_y = 0;
+        for _ in 0..samples {
+            let Some(point) = self.read_raw()? else {
+                return Ok(None);
+            };
+            sum_x += u32::from(point.x);
+            sum_y += u32::from(point.y);
+        }
+
+        Ok(Some(TouchPoint2D {
+            x: (sum_x / samples) as u16,
+            y: (sum_y / samples) as u16,
+        }))
+    }
+
+    /// Whether `samples` raw readings in a row all find no touch
+    fn untouched_raw(&mut self, samples: u32) -> Result<bool, TouchSpiError> {
+        for _ in 0..samples {
+            if self.read_raw()?.is_some() {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
+    }
+}
+
+/// Reading minus `offset`, times `scale`, limited to `size`
+fn scale_axis(raw: u16, offset: u16, scale: f32, size: u16) -> u16 {
+    let scaled = (f32::from(raw.saturating_sub(offset)) * scale) as u32;
+    scaled.min(u32::from(size)) as u16
+}
+
+fn mean(a: u16, b: u16) -> u16 {
+    ((u32::from(a) + u32::from(b)) / 2) as u16
+}
+
+/// Mean distance along one axis between the readings of two pairs of corners
+fn mean_span(a_start: u16, a_end: u16, b_start: u16, b_end: u16) -> f32 {
+    (f32::from(a_start.abs_diff(a_end)) + f32::from(b_start.abs_diff(b_end))) / 2.0
 }

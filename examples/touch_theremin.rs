@@ -67,8 +67,7 @@ fn main() -> ! {
 
     // calibration
     rprintln!("touch each marker as it appears");
-    let calibration = touch.calibrate_from_display(&mut display);
-    touch.calibrate_from_data(calibration);
+    touch.calibrate_from_display(&mut display).unwrap();
     rprintln!("calibration complete - touch to play");
 
     let mut prev_h = 0u16;
