@@ -1,6 +1,6 @@
 pub mod resources;
 
-use resources::{ArduinoHeader, FreePeripherals, FreePins, Resources};
+use resources::{ArduinoHeader, FreePeripherals, FreePins, Resources, UnconnectedPins};
 
 use crate::{
     bsp::{
@@ -64,6 +64,7 @@ pub struct Board {
     pub usb: &'static ApusUsbBus,
 
     pub header: ArduinoHeader,
+    pub unconnected: UnconnectedPins,
     pub peripherals: BoardPeripherals,
     pub pins: FreePins,
 }
@@ -141,6 +142,7 @@ impl Board {
             usb,
 
             header: res.header,
+            unconnected: res.unconnected,
             peripherals: BoardPeripherals {
                 configured: ConfiguredPeripherals { rcc },
                 free: res.peripherals.free,
