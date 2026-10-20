@@ -1,33 +1,24 @@
 use embedded_hal::digital::OutputPin;
+use inverted_pin::InvertedPin;
 
-/// Active-low LED abstraction
-pub struct Led<PIN> {
-    pub pin: PIN,
-}
+/// Active-low LED; the inverted pin makes high mean on
+pub type Led<PIN> = InvertedPin<PIN>;
 
+/// Switches any output pin as an LED: on is high, off is low
 pub trait LedLike {
     fn on(&mut self);
     fn off(&mut self);
 }
 
-impl<PIN> Led<PIN>
-where
-    PIN: OutputPin,
-{
-    pub fn new(pin: PIN) -> Self {
-        Self { pin }
-    }
-}
-
-impl<PIN> LedLike for Led<PIN>
+impl<PIN> LedLike for PIN
 where
     PIN: OutputPin,
 {
     fn on(&mut self) {
-        let _ = self.pin.set_low(); // low = on
+        let _ = self.set_high();
     }
 
     fn off(&mut self) {
-        let _ = self.pin.set_high(); // high = off
+        let _ = self.set_low();
     }
 }
