@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
-use apus::board::resources::Resources;
+use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::{buttons::Buttons, leds::Leds};
 use apus::prelude::*;
 use stm32f0xx_hal::pac;
@@ -18,10 +18,15 @@ fn main() -> ! {
     // peripherals
     let p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
-    let res = Resources::new(p);
+    let mut res = Resources::new(p);
 
     // construct LEDs and Buttons
-    let mut leds = Leds::new(res.leds);
+    let mut leds = Leds::new(
+        res.leds,
+        res.peripherals.tim3,
+        RGB_PWM_FREQUENCY,
+        &mut res.rcc,
+    );
     let mut buttons = Buttons::new(res.buttons);
 
     // delay for debouncing

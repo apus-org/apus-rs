@@ -51,6 +51,7 @@ pub struct Peripherals {
     pub usart3: pac::USART3,
     pub usart4: pac::USART4,
     pub usb: pac::USB,
+    pub tim3: pac::TIM3,
     pub free: FreePeripherals,
 }
 
@@ -217,7 +218,6 @@ impl Resources {
             wwdg: p.WWDG,
             tim1: p.TIM1,
             tim2: p.TIM2,
-            tim3: p.TIM3,
             tim14: p.TIM14,
             tim6: p.TIM6,
             tim7: p.TIM7,
@@ -263,6 +263,7 @@ impl Resources {
                 usart3: p.USART3,
                 usart4: p.USART4,
                 usb: p.USB,
+                tim3: p.TIM3,
                 free: free_peripherals,
             },
             rcc,
@@ -280,7 +281,6 @@ pub struct FreePeripherals {
     pub wwdg: pac::WWDG,
     pub tim1: pac::TIM1,
     pub tim2: pac::TIM2,
-    pub tim3: pac::TIM3,
     pub tim14: pac::TIM14,
     pub tim6: pac::TIM6,
     pub tim7: pac::TIM7,

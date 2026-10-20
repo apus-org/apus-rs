@@ -39,7 +39,7 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use stm32f0xx_hal::{
     adc::Adc,
     pac, rcc,
-    time::{Bps, KiloHertz},
+    time::{Bps, Hertz, KiloHertz},
 };
 
 type BoardI2c = CriticalSectionDevice<'static, I2c1>;
@@ -49,6 +49,9 @@ pub const VCOM_BAUD_RATE: Bps = Bps(115_200);
 
 /// Baud rate of [`Board::uart`]
 pub const UART_BAUD_RATE: Bps = Bps(115_200);
+
+/// PWM frequency of the RGB LED on TIM3
+pub const RGB_PWM_FREQUENCY: Hertz = Hertz(1_000);
 
 /// Clock of I2C1, shared by the temperature sensor and the RTC
 pub const I2C1_FREQUENCY: KiloHertz = KiloHertz(100);
@@ -126,7 +129,7 @@ impl Board {
         let swd = swd::init(res.swd);
 
         // led construction
-        let leds = Leds::new(res.leds);
+        let leds = Leds::new(res.leds, res.peripherals.tim3, RGB_PWM_FREQUENCY, &mut rcc);
 
         // button construction
         let buttons = Buttons::new(res.buttons);
