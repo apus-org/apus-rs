@@ -12,8 +12,12 @@ use crate::{
         leds::{LedPins, RgbPins},
     },
     peripherals::{
-        can::CanPins, i2c::i2c1::I2c1Pins, serial::usart3::Usart3Pins, spi::spi1::Spi1Pins,
-        swd::SwdPins, usb::UsbPins,
+        can::CanPins,
+        i2c::i2c1::I2c1Pins,
+        serial::{usart3::Usart3Pins, usart4::Usart4Pins},
+        spi::spi1::Spi1Pins,
+        swd::SwdPins,
+        usb::UsbPins,
     },
 };
 
@@ -27,6 +31,7 @@ pub struct Resources {
     pub i2c1: I2c1Pins,
     pub can: CanPins,
     pub usart3: Usart3Pins,
+    pub usart4: Usart4Pins,
     pub usb: UsbPins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
@@ -44,6 +49,7 @@ pub struct Peripherals {
     pub adc: pac::ADC,
     pub can: pac::CAN,
     pub usart3: pac::USART3,
+    pub usart4: pac::USART4,
     pub usb: pac::USB,
     pub free: FreePeripherals,
 }
@@ -128,6 +134,12 @@ impl Resources {
             rx: gpiod.pd9,
         };
 
+        // wired to the UART connector
+        let usart4 = Usart4Pins {
+            tx: gpioc.pc10,
+            rx: gpioc.pc11,
+        };
+
         // USB DATA port
         let usb = UsbPins {
             dm: gpioa.pa11,
@@ -186,8 +198,6 @@ impl Resources {
 
         // pins wired on the board that have no place yet
         let free_pins = FreePins {
-            pc10: gpioc.pc10,
-            pc11: gpioc.pc11,
             pd3: gpiod.pd3,
             pd4: gpiod.pd4,
             pd11: gpiod.pd11,
@@ -216,7 +226,6 @@ impl Resources {
             syscfg: p.SYSCFG,
             usart1: p.USART1,
             usart2: p.USART2,
-            usart4: p.USART4,
             rtc: p.RTC,
             tim15: p.TIM15,
             tim16: p.TIM16,
@@ -238,6 +247,7 @@ impl Resources {
             i2c1,
             can,
             usart3,
+            usart4,
             usb,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
@@ -251,6 +261,7 @@ impl Resources {
                 adc: p.ADC,
                 can: p.CAN,
                 usart3: p.USART3,
+                usart4: p.USART4,
                 usb: p.USB,
                 free: free_peripherals,
             },
@@ -278,7 +289,6 @@ pub struct FreePeripherals {
     pub syscfg: pac::SYSCFG,
     pub usart1: pac::USART1,
     pub usart2: pac::USART2,
-    pub usart4: pac::USART4,
     pub rtc: pac::RTC,
     pub tim15: pac::TIM15,
     pub tim16: pac::TIM16,
@@ -362,10 +372,6 @@ pub struct UnconnectedPins {
 
 /// Pins wired on the board that have no place yet
 pub struct FreePins {
-    /// PC10 · UART connector TX
-    pub pc10: gpioc::PC10<Input<Floating>>,
-    /// PC11 · UART connector RX
-    pub pc11: gpioc::PC11<Input<Floating>>,
     /// PD3 · RTC multi-function pin
     pub pd3: gpiod::PD3<Input<Floating>>,
     /// PD4 · temperature sensor alert
