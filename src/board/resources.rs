@@ -31,6 +31,7 @@ pub struct Resources {
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
     pub header: ArduinoHeader,
+    pub unconnected: UnconnectedPins,
     pub pins: FreePins,
     pub peripherals: Peripherals,
 }
@@ -158,45 +159,37 @@ impl Resources {
             sda: gpiob.pb11,
         };
 
-        // leftover pins from splitting gpios
-        let free_pins = FreePins {
-            // GPIOA leftovers
-            pa13: gpioa.pa13,
-            pa14: gpioa.pa14,
-
-            // GPIOB
+        let unconnected = UnconnectedPins {
             pb4: gpiob.pb4,
-
-            // GPIOC leftovers
             pc3: gpioc.pc3,
             pc5: gpioc.pc5,
-            pc10: gpioc.pc10,
-            pc11: gpioc.pc11,
             pc12: gpioc.pc12,
             pc14: gpioc.pc14,
             pc15: gpioc.pc15,
-
-            // GPIOD leftovers
             pd2: gpiod.pd2,
-            pd3: gpiod.pd3,
-            pd4: gpiod.pd4,
             pd5: gpiod.pd5,
             pd6: gpiod.pd6,
             pd7: gpiod.pd7,
             pd10: gpiod.pd10,
-            pd11: gpiod.pd11,
-            pd12: gpiod.pd12,
             pd13: gpiod.pd13,
             pd14: gpiod.pd14,
             pd15: gpiod.pd15,
-
-            // GPIOE leftovers
-
-            // GPIOF leftovers
-            pf2: gpiof.pf2,
-            pf3: gpiof.pf3,
             pf6: gpiof.pf6,
             pf9: gpiof.pf9,
+        };
+
+        // pins wired on the board that have no place yet
+        let free_pins = FreePins {
+            pa13: gpioa.pa13,
+            pa14: gpioa.pa14,
+            pc10: gpioc.pc10,
+            pc11: gpioc.pc11,
+            pd3: gpiod.pd3,
+            pd4: gpiod.pd4,
+            pd11: gpiod.pd11,
+            pd12: gpiod.pd12,
+            pf2: gpiof.pf2,
+            pf3: gpiof.pf3,
         };
 
         // board-peripherals that are unused
@@ -245,6 +238,7 @@ impl Resources {
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             header,
+            unconnected,
             pins: free_pins,
             peripherals: Peripherals {
                 spi1: p.SPI1,
@@ -341,41 +335,46 @@ pub struct ArduinoHeader {
     pub sda: gpiob::PB11<Input<Floating>>,
 }
 
-pub struct FreePins {
-    // GPIOA leftovers
-    pub pa13: gpioa::PA13<Input<Floating>>,
-    pub pa14: gpioa::PA14<Input<Floating>>,
-    // GPIOB leftovers
+/// Pins that are not connected on the board
+pub struct UnconnectedPins {
     pub pb4: gpiob::PB4<Input<Floating>>,
-
-    // GPIOC leftovers
     pub pc3: gpioc::PC3<Input<Floating>>,
     pub pc5: gpioc::PC5<Input<Floating>>,
-    pub pc10: gpioc::PC10<Input<Floating>>,
-    pub pc11: gpioc::PC11<Input<Floating>>,
     pub pc12: gpioc::PC12<Input<Floating>>,
     pub pc14: gpioc::PC14<Input<Floating>>,
     pub pc15: gpioc::PC15<Input<Floating>>,
-
-    // GPIOD leftovers
     pub pd2: gpiod::PD2<Input<Floating>>,
-    pub pd3: gpiod::PD3<Input<Floating>>,
-    pub pd4: gpiod::PD4<Input<Floating>>,
     pub pd5: gpiod::PD5<Input<Floating>>,
     pub pd6: gpiod::PD6<Input<Floating>>,
     pub pd7: gpiod::PD7<Input<Floating>>,
     pub pd10: gpiod::PD10<Input<Floating>>,
-    pub pd11: gpiod::PD11<Input<Floating>>,
-    pub pd12: gpiod::PD12<Input<Floating>>,
     pub pd13: gpiod::PD13<Input<Floating>>,
     pub pd14: gpiod::PD14<Input<Floating>>,
     pub pd15: gpiod::PD15<Input<Floating>>,
-
-    // GPIOE leftovers
-
-    // GPIOF leftovers
-    pub pf2: gpiof::PF2<Input<Floating>>,
-    pub pf3: gpiof::PF3<Input<Floating>>,
     pub pf6: gpiof::PF6<Input<Floating>>,
     pub pf9: gpiof::PF9<Input<Floating>>,
+}
+
+/// Pins wired on the board that have no place yet
+pub struct FreePins {
+    /// PA13 · SWDIO of the debug port
+    pub pa13: gpioa::PA13<Input<Floating>>,
+    /// PA14 · SWCLK of the debug port
+    pub pa14: gpioa::PA14<Input<Floating>>,
+    /// PC10 · UART connector TX
+    pub pc10: gpioc::PC10<Input<Floating>>,
+    /// PC11 · UART connector RX
+    pub pc11: gpioc::PC11<Input<Floating>>,
+    /// PD3 · RTC multi-function pin
+    pub pd3: gpiod::PD3<Input<Floating>>,
+    /// PD4 · temperature sensor alert
+    pub pd4: gpiod::PD4<Input<Floating>>,
+    /// PD11 · VCOM CTS
+    pub pd11: gpiod::PD11<Input<Floating>>,
+    /// PD12 · VCOM RTS
+    pub pd12: gpiod::PD12<Input<Floating>>,
+    /// PF2 · touch pen interrupt
+    pub pf2: gpiof::PF2<Input<Floating>>,
+    /// PF3 · touch busy
+    pub pf3: gpiof::PF3<Input<Floating>>,
 }
