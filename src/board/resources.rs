@@ -154,6 +154,8 @@ impl Resources {
             a3: gpioa.pa6,
             a4: gpiob.pb0,
             a5: gpiob.pb1,
+            scl: gpiob.pb10,
+            sda: gpiob.pb11,
         };
 
         // leftover pins from splitting gpios
@@ -164,8 +166,6 @@ impl Resources {
 
             // GPIOB
             pb4: gpiob.pb4,
-            pb10: gpiob.pb10,
-            pb11: gpiob.pb11,
 
             // GPIOC leftovers
             pc3: gpioc.pc3,
@@ -335,6 +335,10 @@ pub struct ArduinoHeader {
     pub a4: gpiob::PB0<Input<Floating>>,
     /// PB1 · ADC_IN9, via SJ1
     pub a5: gpiob::PB1<Input<Floating>>,
+    /// PB10 · I2C2_SCL
+    pub scl: gpiob::PB10<Input<Floating>>,
+    /// PB11 · I2C2_SDA
+    pub sda: gpiob::PB11<Input<Floating>>,
 }
 
 pub struct FreePins {
@@ -343,8 +347,6 @@ pub struct FreePins {
     pub pa14: gpioa::PA14<Input<Floating>>,
     // GPIOB leftovers
     pub pb4: gpiob::PB4<Input<Floating>>,
-    pub pb10: gpiob::PB10<Input<Floating>>,
-    pub pb11: gpiob::PB11<Input<Floating>>,
 
     // GPIOC leftovers
     pub pc3: gpioc::PC3<Input<Floating>>,
