@@ -35,6 +35,8 @@ pub struct Resources {
     pub usb: UsbPins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
     pub buzzer: gpioc::PC9<Input<Floating>>,
+    /// multi-function pin of the RTC
+    pub rtc_mfp: gpiod::PD3<Input<Floating>>,
     pub header: ArduinoHeader,
     pub swd: SwdPins,
     pub unconnected: UnconnectedPins,
@@ -199,7 +201,6 @@ impl Resources {
 
         // pins wired on the board that have no place yet
         let free_pins = FreePins {
-            pd3: gpiod.pd3,
             pd4: gpiod.pd4,
             pd11: gpiod.pd11,
             pd12: gpiod.pd12,
@@ -251,6 +252,7 @@ impl Resources {
             usb,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
+            rtc_mfp: gpiod.pd3,
             header,
             swd,
             unconnected,
@@ -372,8 +374,6 @@ pub struct UnconnectedPins {
 
 /// Pins wired on the board that have no place yet
 pub struct FreePins {
-    /// PD3 · RTC multi-function pin
-    pub pd3: gpiod::PD3<Input<Floating>>,
     /// PD4 · temperature sensor alert
     pub pd4: gpiod::PD4<Input<Floating>>,
     /// PD11 · VCOM CTS
