@@ -7,3 +7,4 @@ pub mod potentiometer;
 pub mod rtc;
 pub mod temperature;
 pub mod touch;
+pub mod vcom;

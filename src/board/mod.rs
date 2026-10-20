@@ -1,6 +1,6 @@
 pub mod resources;
 
-use resources::{ArduinoHeader, FreePeripherals, FreePins, Resources, UnconnectedPins};
+use resources::{ArduinoHeader, FreePeripherals, Resources, UnconnectedPins};
 
 use crate::{
     bsp::{
@@ -13,12 +13,13 @@ use crate::{
         rtc::Rtc,
         temperature::Temperature,
         touch::{self, Touch},
+        vcom::Vcom,
     },
     peripherals::{
         can::{self, CanBus},
         i2c::i2c1::{self, I2c1},
         serial::{
-            usart3::{self, Usart3},
+            usart3,
             usart4::{self, Usart4},
         },
         spi::spi1,
@@ -71,7 +72,7 @@ pub struct Board {
     pub rtc: Rtc<BoardI2c>,
 
     pub can: CanBus,
-    pub vcom: Usart3,
+    pub vcom: Vcom,
     pub uart: Usart4,
     pub usb: &'static ApusUsbBus,
     pub swd: Swd,
@@ -119,7 +120,9 @@ impl Board {
         let can = CanBus::new(can_instance, can_mode);
 
         // vcom construction (USART3 to the FTDI USB-UART)
-        let vcom = usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
+        let vcom_serial =
+            usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
+        let vcom = Vcom::new(vcom_serial, res.vcom_rts, res.vcom_cts);
 
         // uart construction (USART4 to the UART connector)
         let uart = usart4::init(res.peripherals.usart4, res.usart4, UART_BAUD_RATE, &mut rcc);
@@ -167,7 +170,6 @@ impl Board {
             pins: BoardPins {
                 header: res.header,
                 unconnected: res.unconnected,
-                free: res.pins,
             },
             peripherals: BoardPeripherals {
                 configured: ConfiguredPeripherals { rcc },
@@ -191,7 +193,6 @@ impl Board {
 pub struct BoardPins {
     pub header: ArduinoHeader,
     pub unconnected: UnconnectedPins,
-    pub free: FreePins,
 }
 
 pub struct BoardPeripherals {
