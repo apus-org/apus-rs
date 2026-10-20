@@ -60,15 +60,14 @@ pub struct Board {
     pub touch: Touch,
     pub temperature: ApusTemperature<BoardI2c>,
     pub rtc: ApusRtc<BoardI2c>,
+
     pub can: CanBus,
     pub vcom: Usart3,
     pub usb: &'static ApusUsbBus,
-
-    pub header: ArduinoHeader,
     pub swd: Swd,
-    pub unconnected: UnconnectedPins,
+
+    pub pins: BoardPins,
     pub peripherals: BoardPeripherals,
-    pub pins: FreePins,
 }
 
 impl Board {
@@ -145,15 +144,17 @@ impl Board {
             can,
             vcom,
             usb,
-
-            header: res.header,
             swd,
-            unconnected: res.unconnected,
+
+            pins: BoardPins {
+                header: res.header,
+                unconnected: res.unconnected,
+                free: res.pins,
+            },
             peripherals: BoardPeripherals {
                 configured: ConfiguredPeripherals { rcc },
                 free: res.peripherals.free,
             },
-            pins: res.pins,
         }
     }
 
@@ -167,6 +168,12 @@ impl Board {
 
         bus_static
     }
+}
+
+pub struct BoardPins {
+    pub header: ArduinoHeader,
+    pub unconnected: UnconnectedPins,
+    pub free: FreePins,
 }
 
 pub struct BoardPeripherals {
