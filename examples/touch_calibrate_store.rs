@@ -63,7 +63,7 @@ fn main() -> ! {
 
     // Run the on-screen calibration.
     rprintln!("touch each marker as it appears");
-    let calibration = touch.calibrate_from_display(&mut display);
+    let calibration = touch.calibrate_from_display(&mut display).unwrap();
     rprintln!("calibration complete");
 
     // Assemble the record: magic + serialized calibration.

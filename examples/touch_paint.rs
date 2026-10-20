@@ -67,8 +67,7 @@ fn main() -> ! {
     // Calibrate touch using the display
     rprintln!("Starting touch calibration...");
     rprintln!("Please touch each marker as it appears");
-    let calibration_data = touch.calibrate_from_display(&mut display);
-    touch.calibrate_from_data(calibration_data);
+    touch.calibrate_from_display(&mut display).unwrap();
     rprintln!("Calibration complete!");
 
     loop {
