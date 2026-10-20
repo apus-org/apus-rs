@@ -34,13 +34,13 @@ fn main() -> ! {
 
     let mut display = display::init(res.display, delay_display.forward());
 
-    let adc = Adc::new(res.peripherals.adc, &mut res.rcc);
-    let mut potentiometer = Potentiometer::new(res.potentiometer, adc);
+    let mut adc = Adc::new(res.peripherals.adc, &mut res.rcc);
+    let mut potentiometer = Potentiometer::new(res.potentiometer);
 
     let mut prev_value = 0u16;
 
     loop {
-        let value = potentiometer.read();
+        let value = potentiometer.read(&mut adc);
         let diff: u32 = value.abs_diff(prev_value) as u32;
         if diff.saturating_mul(100) / MAX_VALUE as u32 >= POTI_THRESHOLD_PERCENT {
             // update only the delta (this example: white bar on black background)

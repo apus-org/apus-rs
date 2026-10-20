@@ -69,13 +69,13 @@ fn main() -> ! {
     );
     let rgb = &mut leds.rgb;
 
-    let adc = Adc::new(res.peripherals.adc, &mut res.rcc);
-    let mut potentiometer = Potentiometer::new(res.potentiometer, adc);
+    let mut adc = Adc::new(res.peripherals.adc, &mut res.rcc);
+    let mut potentiometer = Potentiometer::new(res.potentiometer);
 
     loop {
         for position in 0..POSITIONS {
             // squared, because the eye sees small duty cycles as much brighter than they are
-            let knob = u32::from(potentiometer.read());
+            let knob = u32::from(potentiometer.read(&mut adc));
             let brightness = knob * knob / u32::from(potentiometer::MAX_VALUE);
 
             let [red, green, blue] = wheel(position);
