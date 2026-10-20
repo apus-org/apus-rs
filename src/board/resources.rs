@@ -41,10 +41,13 @@ pub struct Resources {
     pub rtc_mfp: gpiod::PD3<Input<Floating>>,
     /// alert output of the temperature sensor
     pub temperature_alert: gpiod::PD4<Input<Floating>>,
+    /// PD11 · ready to receive, to the FTDI's CTS# (FTDI_CTS net)
+    pub vcom_rts: gpiod::PD11<Input<Floating>>,
+    /// PD12 · the PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net)
+    pub vcom_cts: gpiod::PD12<Input<Floating>>,
     pub header: ArduinoHeader,
     pub swd: SwdPins,
     pub unconnected: UnconnectedPins,
-    pub pins: FreePins,
     pub peripherals: Peripherals,
 }
 
@@ -209,12 +212,6 @@ impl Resources {
             pf9: gpiof.pf9,
         };
 
-        // pins wired on the board that have no place yet
-        let free_pins = FreePins {
-            pd11: gpiod.pd11,
-            pd12: gpiod.pd12,
-        };
-
         // board-peripherals that are unused
         let free_peripherals = FreePeripherals {
             crc: p.CRC,
@@ -262,10 +259,11 @@ impl Resources {
             buzzer: gpioc.pc9,
             rtc_mfp: gpiod.pd3,
             temperature_alert: gpiod.pd4,
+            vcom_rts: gpiod.pd11,
+            vcom_cts: gpiod.pd12,
             header,
             swd,
             unconnected,
-            pins: free_pins,
             peripherals: Peripherals {
                 spi1: p.SPI1,
                 i2c1: p.I2C1,
@@ -379,12 +377,4 @@ pub struct UnconnectedPins {
     pub pd15: gpiod::PD15<Input<Floating>>,
     pub pf6: gpiof::PF6<Input<Floating>>,
     pub pf9: gpiof::PF9<Input<Floating>>,
-}
-
-/// Pins wired on the board that have no place yet
-pub struct FreePins {
-    /// PD11 · VCOM CTS
-    pub pd11: gpiod::PD11<Input<Floating>>,
-    /// PD12 · VCOM RTS
-    pub pd12: gpiod::PD12<Input<Floating>>,
 }
