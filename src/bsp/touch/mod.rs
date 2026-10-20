@@ -1,6 +1,9 @@
+use cortex_m::interrupt;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{DrawTarget, Point, RgbColor, Size};
 use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
+use embedded_hal::digital::InputPin;
+use stm32f0xx_hal::gpio::{gpiof, Floating, Input, PullDown, PullUp};
 use tsc2046::Tsc2046;
 
 use crate::bsp::delay::BusyDelay;
@@ -14,6 +17,14 @@ pub type ApusTouchDevice = embedded_hal_bus::spi::ExclusiveDevice<Spi1, Spi1Cs, 
 
 /// Concrete configured touch driver type used by the board.
 pub type ApusTouch = Tsc2046<ApusTouchDevice>;
+
+/// Status lines of the touch controller, unconfigured
+pub struct TouchPins {
+    /// PF2 · pen interrupt, active low
+    pub penirq: gpiof::PF2<Input<Floating>>,
+    /// PF3 · high while a conversion runs
+    pub busy: gpiof::PF3<Input<Floating>>,
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct TouchPoint2D {
@@ -83,19 +94,44 @@ pub type TouchResult = Result<Option<TouchPoint3D>, TouchError>;
 
 pub struct Touch {
     touch: ApusTouch,
+    penirq: gpiof::PF2<Input<PullUp>>,
+    busy: gpiof::PF3<Input<PullDown>>,
     size: DisplaySize,
     calibration_data: Option<TouchCalibrationData>,
 }
 
 impl Touch {
-    pub fn new(device: ApusTouchDevice, touch_threshold: f32, size: DisplaySize) -> Self {
+    pub fn new(
+        device: ApusTouchDevice,
+        pins: TouchPins,
+        touch_threshold: f32,
+        size: DisplaySize,
+    ) -> Self {
         let touch = Tsc2046::new(device, true, touch_threshold).unwrap();
+        let (penirq, busy) = interrupt::free(|cs| {
+            (
+                pins.penirq.into_pull_up_input(cs),
+                pins.busy.into_pull_down_input(cs),
+            )
+        });
         let calibration_data = None;
         Self {
             touch,
+            penirq,
+            busy,
             size,
             calibration_data,
         }
+    }
+
+    /// Whether the panel is pressed, from the pen interrupt line without an SPI transfer
+    pub fn touched(&mut self) -> bool {
+        self.penirq.is_low().unwrap_or(false)
+    }
+
+    /// Whether the controller is converting
+    pub fn busy(&mut self) -> bool {
+        self.busy.is_high().unwrap_or(false)
     }
 
     pub fn read_raw(

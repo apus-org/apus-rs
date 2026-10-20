@@ -97,6 +97,7 @@ impl Board {
         let touch_device = ExclusiveDevice::new(spi1_bus, n_cs, spi1_cs_delay).unwrap();
         let touch = Touch::new(
             touch_device,
+            res.touch,
             touch::DEFAULT_THRESHOLD,
             DisplaySize {
                 x: DISPLAY_WIDTH,

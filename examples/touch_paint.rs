@@ -52,6 +52,7 @@ fn main() -> ! {
     // Initialize the BSP touch driver from the prepared SPI device
     let mut touch = Touch::new(
         spi_dev,
+        res.touch,
         touch::DEFAULT_THRESHOLD,
         DisplaySize {
             x: DISPLAY_WIDTH,
