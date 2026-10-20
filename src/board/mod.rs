@@ -17,7 +17,10 @@ use crate::{
     peripherals::{
         can::{self, CanBus},
         i2c::i2c1::{self, I2c1},
-        serial::usart3::{self, Usart3},
+        serial::{
+            usart3::{self, Usart3},
+            usart4::{self, Usart4},
+        },
         spi::spi1,
         swd::{self, Swd},
         usb::{self, ApusUsbBus},
@@ -44,6 +47,9 @@ type BoardI2c = CriticalSectionDevice<'static, I2c1>;
 /// Baud rate of [`Board::vcom`]
 pub const VCOM_BAUD_RATE: Bps = Bps(115_200);
 
+/// Baud rate of [`Board::uart`]
+pub const UART_BAUD_RATE: Bps = Bps(115_200);
+
 /// Clock of I2C1, shared by the temperature sensor and the RTC
 pub const I2C1_FREQUENCY: KiloHertz = KiloHertz(100);
 
@@ -63,6 +69,7 @@ pub struct Board {
 
     pub can: CanBus,
     pub vcom: Usart3,
+    pub uart: Usart4,
     pub usb: &'static ApusUsbBus,
     pub swd: Swd,
 
@@ -107,6 +114,9 @@ impl Board {
         // vcom construction (USART3 to the FTDI USB-UART)
         let vcom = usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
 
+        // uart construction (USART4 to the UART connector)
+        let uart = usart4::init(res.peripherals.usart4, res.usart4, UART_BAUD_RATE, &mut rcc);
+
         // usb construction (static, so classes and devices built from it can be 'static too)
         let usb_bus = usb::init(res.peripherals.usb, res.usb);
         let usb: &'static ApusUsbBus =
@@ -143,6 +153,7 @@ impl Board {
             rtc,
             can,
             vcom,
+            uart,
             usb,
             swd,
 
