@@ -19,6 +19,7 @@ use crate::{
         i2c::i2c1::{self, I2c1},
         serial::usart3::{self, Usart3},
         spi::spi1,
+        swd::{self, Swd},
         usb::{self, ApusUsbBus},
     },
 };
@@ -64,6 +65,7 @@ pub struct Board {
     pub usb: &'static ApusUsbBus,
 
     pub header: ArduinoHeader,
+    pub swd: Swd,
     pub unconnected: UnconnectedPins,
     pub peripherals: BoardPeripherals,
     pub pins: FreePins,
@@ -111,6 +113,9 @@ impl Board {
         let usb: &'static ApusUsbBus =
             singleton!(: ApusUsbBus = usb_bus).expect("failed to install usb singleton");
 
+        // swd construction (already the debug port since reset)
+        let swd = swd::init(res.swd);
+
         // led construction
         let leds = Leds::new(res.leds);
 
@@ -142,6 +147,7 @@ impl Board {
             usb,
 
             header: res.header,
+            swd,
             unconnected: res.unconnected,
             peripherals: BoardPeripherals {
                 configured: ConfiguredPeripherals { rcc },
