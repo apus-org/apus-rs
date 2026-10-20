@@ -53,3 +53,4 @@ usbd-serial = "0.1.1"
 w5500-ll = { version = "0.13.0", features = ["eh1"] }
 w5500-hl = "0.12.0"
 w5500-dhcp = "0.7.0"
+embedded-sdmmc = { version = "0.10.0", default-features = false }
