@@ -51,10 +51,10 @@ fn main() -> ! {
         .unwrap()
         .and_hms_opt(9, 0, 0)
         .unwrap();
-    if board.rtc.set_datetime(&datetime).is_err() {
+    if board.rtc.clock.set_datetime(&datetime).is_err() {
         rprintln!("failed to set datetime");
     }
-    if board.rtc.enable().is_err() {
+    if board.rtc.clock.enable().is_err() {
         rprintln!("failed to start rtc oscillator");
     }
 
@@ -132,7 +132,7 @@ fn main() -> ! {
                 }
                 Err(_) => rprintln!("temp read error"),
             }
-            match board.rtc.datetime() {
+            match board.rtc.clock.datetime() {
                 Ok(dt) => {
                     line.clear();
                     let _ = write!(line, "time: {}", dt);

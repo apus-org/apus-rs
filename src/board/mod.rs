@@ -10,7 +10,7 @@ use crate::{
         display::{self, ApusDisplay, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},
         leds::Leds,
         potentiometer::Potentiometer,
-        rtc::{self, ApusRtc},
+        rtc::Rtc,
         temperature::{self, ApusTemperature},
         touch::{self, Touch},
     },
@@ -68,7 +68,7 @@ pub struct Board {
     pub delay: BusyDelay,
     pub touch: Touch,
     pub temperature: ApusTemperature<BoardI2c>,
-    pub rtc: ApusRtc<BoardI2c>,
+    pub rtc: Rtc<BoardI2c>,
 
     pub can: CanBus,
     pub vcom: Usart3,
@@ -108,7 +108,7 @@ impl Board {
         let i2c1_bus = i2c1::init(res.peripherals.i2c1, res.i2c1, I2C1_FREQUENCY, &mut rcc);
         let i2c1_bus_static = Self::install_i2c1_singleton(i2c1_bus);
         let temperature = temperature::new(CriticalSectionDevice::new(i2c1_bus_static));
-        let rtc = rtc::new(CriticalSectionDevice::new(i2c1_bus_static));
+        let rtc = Rtc::new(CriticalSectionDevice::new(i2c1_bus_static), res.rtc_mfp);
 
         // can construction
         let (can_instance, can_mode) = can::init(res.peripherals.can, res.can, &mut rcc);
