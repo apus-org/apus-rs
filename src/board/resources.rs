@@ -1,5 +1,6 @@
+use cortex_m::interrupt;
 use stm32f0xx_hal::{
-    gpio::{gpioa, gpiob, gpioc, gpiod, gpiof, Floating, Input},
+    gpio::{gpioa, gpiob, gpioc, gpiod, gpiof, Analog, Floating, Input},
     pac,
     prelude::*,
     rcc::{self, HSEBypassMode, USBClockSource},
@@ -356,25 +357,51 @@ pub struct ArduinoHeader {
 }
 
 /// Pins that are not connected on the board
-pub struct UnconnectedPins {
-    pub pb4: gpiob::PB4<Input<Floating>>,
+pub struct UnconnectedPins<MODE = Input<Floating>> {
+    pub pb4: gpiob::PB4<MODE>,
     /// I2C2_SCL; reaches the header's A5/SCL only with SJ1 moved
-    pub pb10: gpiob::PB10<Input<Floating>>,
+    pub pb10: gpiob::PB10<MODE>,
     /// I2C2_SDA; reaches the header's A4/SDA only with SJ2 moved
-    pub pb11: gpiob::PB11<Input<Floating>>,
-    pub pc3: gpioc::PC3<Input<Floating>>,
-    pub pc5: gpioc::PC5<Input<Floating>>,
-    pub pc12: gpioc::PC12<Input<Floating>>,
-    pub pc14: gpioc::PC14<Input<Floating>>,
-    pub pc15: gpioc::PC15<Input<Floating>>,
-    pub pd2: gpiod::PD2<Input<Floating>>,
-    pub pd5: gpiod::PD5<Input<Floating>>,
-    pub pd6: gpiod::PD6<Input<Floating>>,
-    pub pd7: gpiod::PD7<Input<Floating>>,
-    pub pd10: gpiod::PD10<Input<Floating>>,
-    pub pd13: gpiod::PD13<Input<Floating>>,
-    pub pd14: gpiod::PD14<Input<Floating>>,
-    pub pd15: gpiod::PD15<Input<Floating>>,
-    pub pf6: gpiof::PF6<Input<Floating>>,
-    pub pf9: gpiof::PF9<Input<Floating>>,
+    pub pb11: gpiob::PB11<MODE>,
+    pub pc3: gpioc::PC3<MODE>,
+    pub pc5: gpioc::PC5<MODE>,
+    pub pc12: gpioc::PC12<MODE>,
+    pub pc14: gpioc::PC14<MODE>,
+    pub pc15: gpioc::PC15<MODE>,
+    pub pd2: gpiod::PD2<MODE>,
+    pub pd5: gpiod::PD5<MODE>,
+    pub pd6: gpiod::PD6<MODE>,
+    pub pd7: gpiod::PD7<MODE>,
+    pub pd10: gpiod::PD10<MODE>,
+    pub pd13: gpiod::PD13<MODE>,
+    pub pd14: gpiod::PD14<MODE>,
+    pub pd15: gpiod::PD15<MODE>,
+    pub pf6: gpiof::PF6<MODE>,
+    pub pf9: gpiof::PF9<MODE>,
+}
+
+impl<MODE> UnconnectedPins<MODE> {
+    /// Switch every pin to analog mode, which turns its input stage off
+    pub fn into_analog(self) -> UnconnectedPins<Analog> {
+        interrupt::free(|cs| UnconnectedPins {
+            pb4: self.pb4.into_analog(cs),
+            pb10: self.pb10.into_analog(cs),
+            pb11: self.pb11.into_analog(cs),
+            pc3: self.pc3.into_analog(cs),
+            pc5: self.pc5.into_analog(cs),
+            pc12: self.pc12.into_analog(cs),
+            pc14: self.pc14.into_analog(cs),
+            pc15: self.pc15.into_analog(cs),
+            pd2: self.pd2.into_analog(cs),
+            pd5: self.pd5.into_analog(cs),
+            pd6: self.pd6.into_analog(cs),
+            pd7: self.pd7.into_analog(cs),
+            pd10: self.pd10.into_analog(cs),
+            pd13: self.pd13.into_analog(cs),
+            pd14: self.pd14.into_analog(cs),
+            pd15: self.pd15.into_analog(cs),
+            pf6: self.pf6.into_analog(cs),
+            pf9: self.pf9.into_analog(cs),
+        })
+    }
 }
