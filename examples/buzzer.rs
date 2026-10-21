@@ -9,8 +9,8 @@ use apus::board::resources::Resources;
 use apus::bsp::buttons::Buttons;
 use apus::bsp::buzzer::Buzzer;
 use apus::bsp::delay::BusyDelay;
+use apus::hal::pac;
 use apus::prelude::*;
-use stm32f0xx_hal::pac;
 
 mod common;
 

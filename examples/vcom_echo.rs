@@ -11,7 +11,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::{resources::Resources, VCOM_BAUD_RATE};
 use apus::peripherals::serial::usart3;
 
-use stm32f0xx_hal::{pac, prelude::*};
+use apus::hal::{pac, prelude::*};
 
 #[entry]
 fn main() -> ! {

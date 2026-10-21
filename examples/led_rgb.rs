@@ -14,7 +14,7 @@ use apus::bsp::{
 };
 use apus::prelude::*;
 
-use stm32f0xx_hal::{adc::Adc, pac};
+use apus::hal::{adc::Adc, pac};
 
 // red, green and blue, evenly spaced on the colour wheel
 const CHANNELS: u32 = 3;

@@ -12,7 +12,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::resources::Resources;
 use apus::peripherals::spi::spi2::{self, Spi2Pins};
 
-use stm32f0xx_hal::{pac, prelude::*, time::KiloHertz};
+use apus::hal::{pac, prelude::*, time::KiloHertz};
 use w5500_dhcp::{
     hl::{Error, Udp},
     ll::{eh1::vdm::W5500, net::Eui48Addr, Registers, Sn},

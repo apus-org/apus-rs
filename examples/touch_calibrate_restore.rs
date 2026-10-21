@@ -17,8 +17,8 @@ use apus::bsp::{
 };
 use apus::peripherals::{i2c::i2c1, spi::spi1};
 
+use apus::hal::pac;
 use embedded_hal_bus::spi::ExclusiveDevice;
-use stm32f0xx_hal::pac;
 
 // Must match touch_calibrate_store.
 const MAGIC: [u8; 4] = *b"APUS";

@@ -8,7 +8,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::resources::Resources;
 use apus::peripherals::usb;
 
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 use usb_device::prelude::*;
 use usbd_serial::{SerialPort, USB_CLASS_CDC};
 

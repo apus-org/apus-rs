@@ -15,8 +15,8 @@ use apus::bsp::{
 use apus::peripherals::{i2c::i2c1, spi::spi1};
 use apus::prelude::*;
 
+use apus::hal::pac;
 use embedded_hal_bus::spi::ExclusiveDevice;
-use stm32f0xx_hal::pac;
 
 // EEPROM record layout: magic "APUS" followed by the serialized calibration.
 // The MCP79410 EEPROM array is 0x00..=0x7F with 8-byte pages, so the 16-byte

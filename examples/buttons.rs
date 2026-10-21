@@ -7,8 +7,8 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::{buttons::Buttons, leds::Leds};
+use apus::hal::pac;
 use apus::prelude::*;
-use stm32f0xx_hal::pac;
 
 #[entry]
 fn main() -> ! {

@@ -7,7 +7,7 @@ use rtt_target::{rprintln, rtt_init_print};
 
 use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::leds::Leds;
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
