@@ -7,7 +7,7 @@ use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::RgbColor;
 use panic_probe as _;
 
-use apus::board::{resources::Resources, SPI1_FREQUENCY};
+use apus::board::{defaults::SPI1_FREQUENCY, resources::Resources};
 use apus::bsp::{
     buzzer::Buzzer,
     delay::BusyDelay,

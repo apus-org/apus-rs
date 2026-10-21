@@ -1,5 +1,7 @@
+pub mod defaults;
 pub mod resources;
 
+use defaults::{I2C1_FREQUENCY, RGB_PWM_FREQUENCY, SPI1_FREQUENCY, UART_BAUD_RATE, VCOM_BAUD_RATE};
 use resources::{ArduinoHeader, FreePeripherals, Resources, UnconnectedPins};
 
 use crate::{
@@ -37,29 +39,9 @@ use critical_section::Mutex;
 use embedded_hal_bus::i2c::CriticalSectionDevice;
 use embedded_hal_bus::spi::ExclusiveDevice;
 
-use stm32f0xx_hal::{
-    adc::Adc,
-    gpio::Analog,
-    pac, rcc,
-    time::{Bps, Hertz, KiloHertz},
-};
+use stm32f0xx_hal::{adc::Adc, gpio::Analog, pac, rcc};
 
 type BoardI2c = CriticalSectionDevice<'static, I2c1>;
-
-/// Baud rate of [`Board::vcom`]
-pub const VCOM_BAUD_RATE: Bps = Bps(115_200);
-
-/// Baud rate of [`Board::uart`]
-pub const UART_BAUD_RATE: Bps = Bps(115_200);
-
-/// PWM frequency of the RGB LED on TIM3
-pub const RGB_PWM_FREQUENCY: Hertz = Hertz(1_000);
-
-/// Clock of I2C1, shared by the temperature sensor and the RTC
-pub const I2C1_FREQUENCY: KiloHertz = KiloHertz(100);
-
-/// Clock of SPI1 to the touch controller (APB clock / 128)
-pub const SPI1_FREQUENCY: KiloHertz = KiloHertz(375);
 
 pub struct Board {
     pub leds: Leds,

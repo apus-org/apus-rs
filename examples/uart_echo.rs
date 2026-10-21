@@ -8,7 +8,7 @@ use defmt_rtt as _;
 use nb::block;
 use panic_probe as _;
 
-use apus::board::{resources::Resources, UART_BAUD_RATE};
+use apus::board::{defaults::UART_BAUD_RATE, resources::Resources};
 use apus::peripherals::serial::usart4;
 
 use apus::hal::{pac, prelude::*};
