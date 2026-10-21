@@ -8,7 +8,10 @@ use embedded_graphics::prelude::{Point, RgbColor, Size};
 use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
 use panic_probe as _;
 
-use apus::board::{resources::Resources, I2C1_FREQUENCY, SPI1_FREQUENCY};
+use apus::board::{
+    defaults::{I2C1_FREQUENCY, SPI1_FREQUENCY},
+    resources::Resources,
+};
 use apus::bsp::{
     delay::BusyDelay,
     display::{self, DisplaySize, DISPLAY_HEIGHT, DISPLAY_WIDTH},

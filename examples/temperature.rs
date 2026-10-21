@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use defmt_rtt as _;
 use panic_probe as _;
 
-use apus::board::{resources::Resources, I2C1_FREQUENCY};
+use apus::board::{defaults::I2C1_FREQUENCY, resources::Resources};
 use apus::bsp::{delay::BusyDelay, temperature};
 use apus::peripherals::i2c::i2c1;
 use apus::prelude::*;

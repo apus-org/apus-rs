@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use defmt_rtt as _;
 use panic_probe as _;
 
-use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
+use apus::board::{defaults::RGB_PWM_FREQUENCY, resources::Resources};
 use apus::bsp::{buttons::Buttons, leds::Leds};
 use apus::hal::pac;
 use apus::prelude::*;

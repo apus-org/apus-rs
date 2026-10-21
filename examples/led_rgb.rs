@@ -6,7 +6,7 @@ use defmt_rtt as _;
 use embedded_hal::pwm::SetDutyCycle;
 use panic_probe as _;
 
-use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
+use apus::board::{defaults::RGB_PWM_FREQUENCY, resources::Resources};
 use apus::bsp::{
     delay::BusyDelay,
     leds::Leds,
