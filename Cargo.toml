@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Board-support crate for the APUS board (STM32F072)"
-repository = "https://github.com/jakobjung10/apus-rs"
+repository = "https://github.com/apus-org/apus-rs"
 readme = "README.md"
 exclude = ["device/"]
 
@@ -49,7 +49,6 @@ defmt-rtt = "1.0"
 heapless = "0.9.3"
 nb = "1.1.0"
 panic-probe = { version = "1.0", features = ["print-defmt"] }
-panic-halt = "1.0.0"
 # usbd-hid-macros 0.6 accepts any usbd-hid-descriptors, but only 0.1 compiles with it:
 # Cargo.lock pins it (cargo update -p usbd-hid-descriptors --precise 0.1.2)
 usbd-hid = "0.6.1"
