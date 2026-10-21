@@ -106,7 +106,7 @@ impl Board {
         // vcom construction (USART3 to the FTDI USB-UART)
         let vcom_serial =
             usart3::init(res.peripherals.usart3, res.usart3, VCOM_BAUD_RATE, &mut rcc);
-        let vcom = Vcom::new(vcom_serial, res.vcom_rts, res.vcom_cts);
+        let vcom = Vcom::new(vcom_serial, res.vcom_flow_control);
 
         // uart construction (USART4 to the UART connector)
         let uart = usart4::init(res.peripherals.usart4, res.usart4, UART_BAUD_RATE, &mut rcc);
