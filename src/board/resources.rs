@@ -12,6 +12,7 @@ use crate::{
         display::DisplayPins,
         leds::{LedPins, RgbPins},
         touch::TouchPins,
+        vcom::VcomFlowControlPins,
     },
     peripherals::{
         can::CanPins,
@@ -34,6 +35,7 @@ pub struct Resources {
     pub i2c1: I2c1Pins,
     pub can: CanPins,
     pub usart3: Usart3Pins,
+    pub vcom_flow_control: VcomFlowControlPins,
     pub usart4: Usart4Pins,
     pub usb: UsbPins,
     pub potentiometer: gpioc::PC4<Input<Floating>>,
@@ -42,10 +44,6 @@ pub struct Resources {
     pub rtc_mfp: gpiod::PD3<Input<Floating>>,
     /// alert output of the temperature sensor
     pub temperature_alert: gpiod::PD4<Input<Floating>>,
-    /// PD11 · ready to receive, to the FTDI's CTS# (FTDI_CTS net)
-    pub vcom_rts: gpiod::PD11<Input<Floating>>,
-    /// PD12 · the PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net)
-    pub vcom_cts: gpiod::PD12<Input<Floating>>,
     pub header: ArduinoHeader,
     pub swd: SwdPins,
     pub unconnected: UnconnectedPins,
@@ -151,6 +149,12 @@ impl Resources {
             rx: gpiod.pd9,
         };
 
+        // flow-control lines of the VCOM port
+        let vcom_flow_control = VcomFlowControlPins {
+            rts: gpiod.pd11,
+            cts: gpiod.pd12,
+        };
+
         // wired to the UART connector
         let usart4 = Usart4Pins {
             tx: gpioc.pc10,
@@ -254,14 +258,13 @@ impl Resources {
             i2c1,
             can,
             usart3,
+            vcom_flow_control,
             usart4,
             usb,
             potentiometer: gpioc.pc4,
             buzzer: gpioc.pc9,
             rtc_mfp: gpiod.pd3,
             temperature_alert: gpiod.pd4,
-            vcom_rts: gpiod.pd11,
-            vcom_cts: gpiod.pd12,
             header,
             swd,
             unconnected,

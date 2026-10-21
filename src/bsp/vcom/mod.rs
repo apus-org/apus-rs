@@ -12,6 +12,14 @@ pub type VcomRts = gpiod::PD11<Output<PushPull>>;
 /// The PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net); low means ready
 pub type VcomCts = gpiod::PD12<Input<Floating>>;
 
+/// Flow-control lines of the VCOM port, unconfigured
+pub struct VcomFlowControlPins {
+    /// PD11 · ready to receive, to the FTDI's CTS# (FTDI_CTS net)
+    pub rts: gpiod::PD11<Input<Floating>>,
+    /// PD12 · the PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net)
+    pub cts: gpiod::PD12<Input<Floating>>,
+}
+
 /// USART3 to the FTDI USB-UART and its flow-control lines, driven in software
 pub struct Vcom {
     pub serial: Usart3,
@@ -20,13 +28,13 @@ pub struct Vcom {
 }
 
 impl Vcom {
-    pub fn new(
-        serial: Usart3,
-        rts: gpiod::PD11<Input<Floating>>,
-        cts: gpiod::PD12<Input<Floating>>,
-    ) -> Self {
-        let (mut rts, cts) =
-            interrupt::free(|cs| (rts.into_push_pull_output(cs), cts.into_floating_input(cs)));
+    pub fn new(serial: Usart3, pins: VcomFlowControlPins) -> Self {
+        let (mut rts, cts) = interrupt::free(|cs| {
+            (
+                pins.rts.into_push_pull_output(cs),
+                pins.cts.into_floating_input(cs),
+            )
+        });
         let _ = rts.set_low();
 
         Self { serial, rts, cts }
