@@ -12,6 +12,9 @@ use crate::peripherals::spi::spi1::{Spi1, Spi1Cs};
 
 pub const DEFAULT_THRESHOLD: f32 = 1.0; // TODO: find optimal value
 
+/// Edge length of the calibration markers, which are pressed at their centre
+const MARKER_SIZE: u16 = 20;
+
 /// SPI device type for the touch controller
 pub type ApusTouchDevice = embedded_hal_bus::spi::ExclusiveDevice<Spi1, Spi1Cs, BusyDelay>;
 
@@ -154,19 +157,15 @@ impl Touch {
             _ => return Ok(None),
         };
 
-        let x = scale_axis(
-            raw_point.x,
-            calibration.offset.x,
-            calibration.scale.x,
-            self.size.x,
-        );
-        let y = self.size.y
-            - scale_axis(
-                raw_point.y,
-                calibration.offset.y,
-                calibration.scale.y,
-                self.size.y,
-            );
+        // the offsets are the readings at the centres of the left and bottom markers
+        let marker_center = MARKER_SIZE / 2;
+        let left_center = f32::from(marker_center);
+        let bottom_center = f32::from(self.size.y - marker_center);
+
+        let distance_x = scale_distance(raw_point.x, calibration.offset.x, calibration.scale.x);
+        let distance_y = scale_distance(raw_point.y, calibration.offset.y, calibration.scale.y);
+        let x = clamp_to_axis(left_center + distance_x, self.size.x);
+        let y = clamp_to_axis(bottom_center - distance_y, self.size.y);
 
         Ok(Some(TouchPoint3D {
             x,
@@ -184,8 +183,6 @@ impl Touch {
         &mut self,
         display: &mut impl DrawTarget<Color = Rgb565>,
     ) -> Result<TouchCalibrationData, TouchError> {
-        const MARKER_SIZE: u16 = 20;
-
         let left = 0;
         let top = 0;
         let right = self.size.x - MARKER_SIZE;
@@ -210,9 +207,10 @@ impl Touch {
                 x: mean(top_left.x, bottom_left.x),
                 y: mean(bottom_left.y, bottom_right.y),
             },
+            // the readings span the distance between the marker centres
             scale: TouchScale {
-                x: f32::from(self.size.x) / span_x,
-                y: f32::from(self.size.y) / span_y,
+                x: f32::from(right - left) / span_x,
+                y: f32::from(bottom - top) / span_y,
             },
         };
         self.calibrate_from_data(data);
@@ -285,10 +283,15 @@ impl Touch {
     }
 }
 
-/// Reading minus `offset`, times `scale`, limited to `size`
-fn scale_axis(raw: u16, offset: u16, scale: f32, size: u16) -> u16 {
-    let scaled = (f32::from(raw.saturating_sub(offset)) * scale) as u32;
-    scaled.min(u32::from(size)) as u16
+/// Signed distance of a reading from `offset`, in pixels
+fn scale_distance(raw: u16, offset: u16, scale: f32) -> f32 {
+    (f32::from(raw) - f32::from(offset)) * scale
+}
+
+/// `position` as a pixel of an axis `size` pixels long
+fn clamp_to_axis(position: f32, size: u16) -> u16 {
+    let last_pixel = f32::from(size - 1);
+    position.clamp(0.0, last_pixel) as u16
 }
 
 fn mean(a: u16, b: u16) -> u16 {
