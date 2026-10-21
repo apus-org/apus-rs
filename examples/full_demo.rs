@@ -4,6 +4,7 @@
 use core::fmt::Write;
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::{
     mono_font::{
         iso_8859_13::{FONT_10X20, FONT_6X10},
@@ -16,8 +17,7 @@ use embedded_graphics::{
     Drawable,
 };
 use heapless::String;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::Board;
 use apus::bsp::{
@@ -37,25 +37,24 @@ const SENSOR_PERIOD_TICKS: u32 = 20;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: full_demo");
+    defmt::info!("APUS-RS example: full_demo");
 
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);
 
     // start sensors
     if board.temperature.sensor.enable().is_err() {
-        rprintln!("failed to enable temperature sensor");
+        defmt::error!("failed to enable temperature sensor");
     }
     let datetime = NaiveDate::from_ymd_opt(2002, 6, 10)
         .unwrap()
         .and_hms_opt(9, 0, 0)
         .unwrap();
     if board.rtc.clock.set_datetime(&datetime).is_err() {
-        rprintln!("failed to set datetime");
+        defmt::error!("failed to set datetime");
     }
     if board.rtc.clock.enable().is_err() {
-        rprintln!("failed to start rtc oscillator");
+        defmt::error!("failed to start rtc oscillator");
     }
 
     // text styles
@@ -130,7 +129,7 @@ fn main() -> ! {
                     let _ =
                         Text::new(&line, Point::new(10, 45), value_style).draw(&mut board.display);
                 }
-                Err(_) => rprintln!("temp read error"),
+                Err(_) => defmt::error!("temp read error"),
             }
             match board.rtc.clock.datetime() {
                 Ok(dt) => {
@@ -139,7 +138,7 @@ fn main() -> ! {
                     let _ =
                         Text::new(&line, Point::new(10, 60), value_style).draw(&mut board.display);
                 }
-                Err(_) => rprintln!("rtc read error"),
+                Err(_) => defmt::error!("rtc read error"),
             }
         }
 

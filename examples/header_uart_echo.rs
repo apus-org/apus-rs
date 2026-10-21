@@ -4,9 +4,9 @@
 use core::fmt::Write;
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use nb::block;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::peripherals::serial::usart1::{self, Usart1Pins};
@@ -17,8 +17,7 @@ const BAUD_RATE: Bps = Bps(115_200);
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: header_uart_echo");
+    defmt::info!("APUS-RS example: header_uart_echo");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -41,7 +40,7 @@ fn main() -> ! {
                     let _ = block!(uart.write(b'\n'));
                 }
             }
-            Err(error) => rprintln!("read error: {:?}", error),
+            Err(error) => defmt::error!("read error: {}", defmt::Debug2Format(&error)),
         }
     }
 }

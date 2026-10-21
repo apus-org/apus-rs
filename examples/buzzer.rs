@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::bsp::buttons::Buttons;
@@ -23,8 +23,7 @@ const TONE_LENGTH_MS: u32 = 20;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: buzzer (hold a button to play a note)");
+    defmt::info!("APUS-RS example: buzzer (hold a button to play a note)");
 
     let p = pac::Peripherals::take().unwrap();
 

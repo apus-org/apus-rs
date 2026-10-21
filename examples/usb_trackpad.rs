@@ -6,6 +6,7 @@ use core::cell::RefCell;
 use cortex_m::interrupt::Mutex;
 use cortex_m::peripheral::NVIC;
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::{
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
@@ -13,8 +14,7 @@ use embedded_graphics::{
     primitives::{PrimitiveStyle, Rectangle},
     text::{Alignment, Text},
 };
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::Board;
 use apus::bsp::display::ApusDisplay;
@@ -178,13 +178,12 @@ fn draw_layout(display: &mut ApusDisplay) {
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: usb_trackpad");
+    defmt::info!("APUS-RS example: usb_trackpad");
 
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);
 
-    rprintln!("touch each marker as it appears");
+    defmt::info!("touch each marker as it appears");
     board
         .touch
         .calibrate_from_display(&mut board.display)

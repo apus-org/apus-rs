@@ -2,11 +2,11 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{Point, RgbColor, Size};
 use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, I2C1_FREQUENCY, SPI1_FREQUENCY};
 use apus::bsp::{
@@ -27,8 +27,7 @@ const EEPROM_BASE: u8 = 0x00;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: touch_calibrate_restore");
+    defmt::info!("APUS-RS example: touch_calibrate_restore");
 
     let p = pac::Peripherals::take().unwrap();
 
@@ -60,18 +59,18 @@ fn main() -> ! {
     // Read the record (a sequential read may span pages freely).
     let mut record = [0u8; RECORD_LEN];
     if eeprom.read_eeprom_data(EEPROM_BASE, &mut record).is_err() {
-        rprintln!("eeprom read failed");
+        defmt::error!("eeprom read failed");
         idle();
     }
     if record[..MAGIC.len()] != MAGIC {
-        rprintln!("no calibration stored, run touch_calibrate_store first");
+        defmt::info!("no calibration stored, run touch_calibrate_store first");
         idle();
     }
 
     let mut payload = [0u8; TouchCalibrationData::SERIALIZED_LEN];
     payload.copy_from_slice(&record[MAGIC.len()..]);
     touch.calibrate_from_data(TouchCalibrationData::from_bytes(&payload));
-    rprintln!("calibration restored from EEPROM");
+    defmt::info!("calibration restored from EEPROM");
 
     const PAINT_COLOR: Rgb565 = Rgb565::WHITE;
     const PAINT_SIZE: u32 = 10;
@@ -79,7 +78,7 @@ fn main() -> ! {
 
     loop {
         if let Ok(Some(tp)) = touch.read() {
-            rprintln!("touch: x={} y={} z={:.2}", tp.x, tp.y, tp.z);
+            defmt::info!("touch: x={} y={} z={}", tp.x, tp.y, tp.z);
             let _ = Rectangle::new(
                 Point::new(tp.x as i32, tp.y as i32),
                 Size::new(PAINT_SIZE, PAINT_SIZE),

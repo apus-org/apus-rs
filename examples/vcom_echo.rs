@@ -4,9 +4,9 @@
 use core::fmt::Write;
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use nb::block;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, VCOM_BAUD_RATE};
 use apus::peripherals::serial::usart3;
@@ -15,8 +15,7 @@ use apus::hal::{pac, prelude::*};
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: vcom_echo");
+    defmt::info!("APUS-RS example: vcom_echo");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -39,7 +38,7 @@ fn main() -> ! {
                     let _ = block!(vcom.write(b'\n'));
                 }
             }
-            Err(error) => rprintln!("read error: {:?}", error),
+            Err(error) => defmt::error!("read error: {}", defmt::Debug2Format(&error)),
         }
     }
 }

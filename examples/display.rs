@@ -2,14 +2,14 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::{
     pixelcolor::Rgb565,
     prelude::{DrawTarget, Point, Primitive, RgbColor, Size},
     primitives::{Circle, PrimitiveStyle, Rectangle, Triangle},
     Drawable,
 };
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::bsp::delay::BusyDelay;
@@ -18,9 +18,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    // RTT
-    rtt_init_print!();
-    rprintln!("APUS-RS example: display demo");
+    defmt::info!("APUS-RS example: display demo");
 
     // Peripherals
     let p = pac::Peripherals::take().unwrap();

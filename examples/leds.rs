@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::leds::Leds;
@@ -11,9 +11,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    // rtt
-    rtt_init_print!();
-    rprintln!("APUS-RS example: leds");
+    defmt::info!("APUS-RS example: leds");
     // peripherals
     let p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();

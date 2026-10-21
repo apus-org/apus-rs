@@ -2,10 +2,10 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::RgbColor;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, SPI1_FREQUENCY};
 use apus::bsp::{
@@ -38,8 +38,7 @@ const BG_COLOR: Rgb565 = Rgb565::BLACK;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: touch_theremin");
+    defmt::info!("APUS-RS example: touch_theremin");
 
     let p = pac::Peripherals::take().unwrap();
 
@@ -66,9 +65,9 @@ fn main() -> ! {
     let mut delay = BusyDelay::new(sys_clock_hz);
 
     // calibration
-    rprintln!("touch each marker as it appears");
+    defmt::info!("touch each marker as it appears");
     touch.calibrate_from_display(&mut display).unwrap();
-    rprintln!("calibration complete - touch to play");
+    defmt::info!("calibration complete - touch to play");
 
     let mut prev_h = 0u16;
     loop {

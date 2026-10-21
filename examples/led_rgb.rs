@@ -2,9 +2,9 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_hal::pwm::SetDutyCycle;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::{
@@ -52,8 +52,7 @@ fn set_level(led: &mut impl SetDutyCycle, level: u32, brightness: u32) {
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: led_rgb (turn the potentiometer for brightness)");
+    defmt::info!("APUS-RS example: led_rgb (turn the potentiometer for brightness)");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
