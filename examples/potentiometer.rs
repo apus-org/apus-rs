@@ -12,7 +12,7 @@ use apus::bsp::{
     display::{self, DISPLAY_WIDTH},
     potentiometer::{Potentiometer, MAX_VALUE},
 };
-use stm32f0xx_hal::{adc::Adc, pac};
+use apus::hal::{adc::Adc, pac};
 
 mod common;
 

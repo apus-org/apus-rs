@@ -14,7 +14,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::resources::Resources;
 use apus::bsp::delay::BusyDelay;
 use apus::bsp::display::{self};
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {

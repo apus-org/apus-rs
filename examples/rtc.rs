@@ -13,7 +13,7 @@ use apus::bsp::{
 use apus::peripherals::i2c::i2c1;
 use apus::prelude::*;
 
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {

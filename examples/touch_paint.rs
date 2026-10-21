@@ -16,7 +16,7 @@ use apus::bsp::{
 };
 use apus::peripherals::spi::spi1;
 
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {

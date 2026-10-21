@@ -11,8 +11,8 @@ use apus::bsp::{delay::BusyDelay, leds::Leds};
 use apus::peripherals::can::{self, CanBus};
 use apus::prelude::*;
 
-use stm32f0xx_hal::can::bxcan::{filter::Mask32, Data, Fifo, Frame, StandardId};
-use stm32f0xx_hal::pac;
+use apus::hal::can::bxcan::{filter::Mask32, Data, Fifo, Frame, StandardId};
+use apus::hal::pac;
 
 // 16 time quanta per bit, sampled after 1 + 13 of them (87.5 %)
 const BIT_RATE: u32 = 500_000;

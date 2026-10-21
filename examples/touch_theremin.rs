@@ -17,8 +17,8 @@ use apus::bsp::{
 use apus::peripherals::spi::spi1;
 use apus::prelude::*;
 
+use apus::hal::pac;
 use embedded_hal_bus::spi::ExclusiveDevice;
-use stm32f0xx_hal::pac;
 
 mod common;
 

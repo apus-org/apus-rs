@@ -20,8 +20,8 @@ use apus::board::Board;
 use apus::bsp::display::ApusDisplay;
 use apus::peripherals::usb::ApusUsbBus;
 
-use stm32f0xx_hal::pac::{self, interrupt, Interrupt};
-use stm32f0xx_hal::usb::UsbBusType;
+use apus::hal::pac::{self, interrupt, Interrupt};
+use apus::hal::usb::UsbBusType;
 use usb_device::prelude::*;
 use usbd_hid::descriptor::{MouseReport, SerializedDescriptor};
 use usbd_hid::hid_class::HIDClass;

@@ -27,7 +27,7 @@ use apus::bsp::{
 };
 use apus::prelude::*;
 
-use stm32f0xx_hal::pac;
+use apus::hal::pac;
 
 mod common;
 

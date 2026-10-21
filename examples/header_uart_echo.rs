@@ -11,7 +11,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use apus::board::resources::Resources;
 use apus::peripherals::serial::usart1::{self, Usart1Pins};
 
-use stm32f0xx_hal::{pac, prelude::*, time::Bps};
+use apus::hal::{pac, prelude::*, time::Bps};
 
 const BAUD_RATE: Bps = Bps(115_200);
 

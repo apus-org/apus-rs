@@ -16,7 +16,7 @@ use apus::board::resources::Resources;
 use apus::bsp::delay::BusyDelay;
 use apus::peripherals::spi::spi2::{self, Spi2Pins};
 
-use stm32f0xx_hal::{pac, prelude::*, time::KiloHertz};
+use apus::hal::{pac, prelude::*, time::KiloHertz};
 
 // W5500 Ethernet Shield: SD card CS on D4, W5500 CS on D10
 // cards start in SPI mode at up to 400 kHz (APB clock / 128)
