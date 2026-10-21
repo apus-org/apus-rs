@@ -19,6 +19,9 @@ where
     pub fn new(channel: PwmChannels<pac::TIM3, CHANNEL>) -> Self {
         let mut led = Self { channel };
         led.channel.set_duty(led.period());
+        // the off duty is only preloaded; an update event applies it before the output is enabled
+        // SAFETY: a write-only trigger on the timer this channel belongs to
+        unsafe { (*pac::TIM3::ptr()).egr.write(|w| w.ug().set_bit()) };
         led.channel.enable();
         led
     }
