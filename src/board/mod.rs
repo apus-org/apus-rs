@@ -39,6 +39,7 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 
 use stm32f0xx_hal::{
     adc::Adc,
+    gpio::Analog,
     pac, rcc,
     time::{Bps, Hertz, KiloHertz},
 };
@@ -173,7 +174,8 @@ impl Board {
 
             pins: BoardPins {
                 header: res.header,
-                unconnected: res.unconnected,
+                // analog mode for lower power consumption
+                unconnected: res.unconnected.into_analog(),
             },
             peripherals: BoardPeripherals {
                 configured: ConfiguredPeripherals { rcc },
@@ -196,7 +198,7 @@ impl Board {
 
 pub struct BoardPins {
     pub header: ArduinoHeader,
-    pub unconnected: UnconnectedPins,
+    pub unconnected: UnconnectedPins<Analog>,
 }
 
 pub struct BoardPeripherals {
