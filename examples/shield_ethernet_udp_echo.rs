@@ -5,9 +5,9 @@ use core::sync::atomic::{AtomicU32, Ordering};
 
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rt::{entry, exception};
+use defmt_rtt as _;
 use embedded_hal_bus::spi::ExclusiveDevice;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::peripherals::spi::spi2::{self, Spi2Pins};
@@ -40,8 +40,7 @@ fn SysTick() {
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: shield_ethernet_udp_echo");
+    defmt::info!("APUS-RS example: shield_ethernet_udp_echo");
 
     let p = pac::Peripherals::take().unwrap();
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -94,7 +93,7 @@ fn main() -> ! {
         let phy_link = w5500.phycfgr().unwrap().lnk();
         if link != Some(phy_link) {
             link = Some(phy_link);
-            rprintln!("link {:?}", phy_link);
+            defmt::info!("link {}", defmt::Debug2Format(&phy_link));
         }
 
         let now = SECONDS.load(Ordering::Relaxed);
@@ -105,23 +104,27 @@ fn main() -> ! {
         if dhcp.leased_ip() != leased {
             leased = dhcp.leased_ip();
             match leased {
-                Some(ip) => rprintln!("leased {}, echoing on UDP port {}", ip, ECHO_PORT),
-                None => rprintln!("lease lost"),
+                Some(ip) => defmt::info!(
+                    "leased {}, echoing on UDP port {}",
+                    defmt::Display2Format(&ip),
+                    ECHO_PORT
+                ),
+                None => defmt::warn!("lease lost"),
             }
         }
 
         match w5500.udp_recv_from(ECHO_SN, &mut buf) {
             Ok((len, origin)) => {
-                rprintln!("{} bytes from {}", len, origin);
+                defmt::info!("{} bytes from {}", len, defmt::Display2Format(&origin));
                 if w5500
                     .udp_send_to(ECHO_SN, &buf[..len.into()], &origin)
                     .is_err()
                 {
-                    rprintln!("send error");
+                    defmt::error!("send error");
                 }
             }
             Err(Error::WouldBlock) => {}
-            Err(error) => rprintln!("receive error: {:?}", error),
+            Err(error) => defmt::error!("receive error: {}", defmt::Debug2Format(&error)),
         }
     }
 }

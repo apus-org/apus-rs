@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::{resources::Resources, I2C1_FREQUENCY};
 use apus::bsp::{delay::BusyDelay, temperature};
@@ -14,8 +14,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: temperature");
+    defmt::info!("APUS-RS example: temperature");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -25,7 +24,7 @@ fn main() -> ! {
     let mut temperature = temperature::new(i2c);
 
     if temperature.enable().is_err() {
-        rprintln!("failed to enable temperature sensor");
+        defmt::error!("failed to enable temperature sensor");
     }
 
     let sys_clock_hz = res.rcc.clocks.sysclk().0;
@@ -33,8 +32,8 @@ fn main() -> ! {
 
     loop {
         match temperature.read_temperature() {
-            Ok(c) => rprintln!("temp: {:.2} C", c),
-            Err(_) => rprintln!("temp read error"),
+            Ok(c) => defmt::info!("temp: {} C", c),
+            Err(_) => defmt::error!("temp read error"),
         }
         delay.delay_ms(1000);
     }

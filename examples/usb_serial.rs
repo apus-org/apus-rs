@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::peripherals::usb;
@@ -17,8 +17,7 @@ const VID_PID: UsbVidPid = UsbVidPid(0x16c0, 0x27dd);
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: usb_serial");
+    defmt::info!("APUS-RS example: usb_serial");
 
     let p = pac::Peripherals::take().unwrap();
     let res = Resources::new(p);
@@ -38,7 +37,7 @@ fn main() -> ! {
     loop {
         if device.state() != state {
             state = device.state();
-            rprintln!("usb state: {:?}", state);
+            defmt::info!("usb state: {}", defmt::Debug2Format(&state));
         }
 
         if !device.poll(&mut [&mut serial]) {

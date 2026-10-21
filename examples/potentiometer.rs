@@ -2,10 +2,10 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::{pixelcolor::Rgb565, prelude::RgbColor};
 use embedded_hal_compat::ForwardCompat;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::bsp::{
@@ -20,9 +20,7 @@ const POTI_THRESHOLD_PERCENT: u32 = 5;
 
 #[entry]
 fn main() -> ! {
-    // rtt
-    rtt_init_print!();
-    rprintln!("APUS-RS example: potentiometer");
+    defmt::info!("APUS-RS example: potentiometer");
     // peripherals
     let p = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
@@ -56,7 +54,7 @@ fn main() -> ! {
                 30,
             );
 
-            rprintln!("Potentiometer value: {}", value);
+            defmt::info!("Potentiometer value: {}", value);
 
             prev_value = value;
         }

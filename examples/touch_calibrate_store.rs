@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::{resources::Resources, I2C1_FREQUENCY, SPI1_FREQUENCY};
 use apus::bsp::{
@@ -29,8 +29,7 @@ const WRITE_CYCLE_MS: u32 = 10;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: touch_calibrate_store");
+    defmt::info!("APUS-RS example: touch_calibrate_store");
 
     let p = pac::Peripherals::take().unwrap();
 
@@ -62,9 +61,9 @@ fn main() -> ! {
     let mut delay = BusyDelay::new(sys_clock_hz);
 
     // Run the on-screen calibration.
-    rprintln!("touch each marker as it appears");
+    defmt::info!("touch each marker as it appears");
     let calibration = touch.calibrate_from_display(&mut display).unwrap();
-    rprintln!("calibration complete");
+    defmt::info!("calibration complete");
 
     // Assemble the record: magic + serialized calibration.
     let mut record = [0u8; RECORD_LEN];
@@ -75,7 +74,7 @@ fn main() -> ! {
     for (i, page) in record.chunks(PAGE_SIZE).enumerate() {
         let address = EEPROM_BASE + (i * PAGE_SIZE) as u8;
         if eeprom.write_eeprom_data(address, page).is_err() {
-            rprintln!("eeprom write failed at 0x{:02X}", address);
+            defmt::error!("eeprom write failed at {=u8:#04X}", address);
             break;
         }
         delay.delay_ms(WRITE_CYCLE_MS);
@@ -84,9 +83,9 @@ fn main() -> ! {
     // read back to confirm
     let mut verify = [0u8; RECORD_LEN];
     match eeprom.read_eeprom_data(EEPROM_BASE, &mut verify) {
-        Ok(()) if verify == record => rprintln!("stored and verified"),
-        Ok(()) => rprintln!("verify mismatch"),
-        Err(_) => rprintln!("eeprom read-back failed"),
+        Ok(()) if verify == record => defmt::info!("stored and verified"),
+        Ok(()) => defmt::error!("verify mismatch"),
+        Err(_) => defmt::error!("eeprom read-back failed"),
     }
 
     loop {

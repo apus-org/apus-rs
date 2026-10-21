@@ -2,5 +2,8 @@
 target = "thumbv6m-none-eabi"
 
 [target.thumbv6m-none-eabi]
-rustflags = ["-C", "link-arg=-Tlink.x"]
+rustflags = ["-C", "link-arg=-Tlink.x", "-C", "link-arg=-Tdefmt.x"]
 runner = 'probe-rs run --chip STM32F072VBTx'
+
+[env]
+DEFMT_LOG = "info"

@@ -2,11 +2,11 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{Point, RgbColor, Size};
 use embedded_graphics::primitives::{PrimitiveStyle, Rectangle, StyledDrawable};
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, SPI1_FREQUENCY};
 use apus::bsp::{
@@ -20,9 +20,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    // RTT
-    rtt_init_print!();
-    rprintln!("APUS-RS example: touch");
+    defmt::info!("APUS-RS example: touch");
 
     // Peripherals
     let p = pac::Peripherals::take().unwrap();
@@ -65,15 +63,15 @@ fn main() -> ! {
     const STYLE: PrimitiveStyle<Rgb565> = PrimitiveStyle::with_fill(PAINT_COLOR);
 
     // Calibrate touch using the display
-    rprintln!("Starting touch calibration...");
-    rprintln!("Please touch each marker as it appears");
+    defmt::info!("Starting touch calibration...");
+    defmt::info!("Please touch each marker as it appears");
     touch.calibrate_from_display(&mut display).unwrap();
-    rprintln!("Calibration complete!");
+    defmt::info!("Calibration complete!");
 
     loop {
         match touch.read() {
             Ok(Some(tp)) => {
-                rprintln!("touch: x={} y={} z={:.2}", tp.x, tp.y, tp.z);
+                defmt::info!("touch: x={} y={} z={}", tp.x, tp.y, tp.z);
                 let _ = Rectangle::new(
                     Point::new(tp.x as i32, tp.y as i32),
                     Size::new(PAINT_SIZE, PAINT_SIZE),
@@ -81,11 +79,11 @@ fn main() -> ! {
                 .draw_styled(&STYLE, &mut display);
             }
             Ok(None) => {
-                rprintln!("no touch");
+                defmt::info!("no touch");
                 delay.delay_ms(200);
             }
             Err(e) => {
-                rprintln!("error reading touch: {:?}", e);
+                defmt::error!("error reading touch: {}", defmt::Debug2Format(&e));
                 delay.delay_ms(1000);
             }
         }

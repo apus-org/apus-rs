@@ -5,12 +5,12 @@ use core::convert::Infallible;
 use core::ops::ControlFlow;
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use embedded_hal::digital;
 use embedded_hal::spi::SpiBus;
 use embedded_hal_bus::spi::ExclusiveDevice;
 use embedded_sdmmc::{Mode, SdCard, TimeSource, Timestamp, VolumeIdx, VolumeManager};
-use panic_rtt_target as _;
-use rtt_target::{rprint, rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::resources::Resources;
 use apus::bsp::delay::BusyDelay;
@@ -54,8 +54,7 @@ impl digital::OutputPin for Selected {
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: shield_ethernet_sd_card");
+    defmt::info!("APUS-RS example: shield_ethernet_sd_card");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -91,15 +90,20 @@ fn main() -> ! {
     let sd_device = ExclusiveDevice::new_no_delay(spi2, Selected).unwrap();
     let sd_card = SdCard::new(sd_device, BusyDelay::new(sys_clock_hz));
     let card_type = sd_card.get_card_type().expect("no SD card answered");
-    rprintln!("card: {:?}", card_type);
+    defmt::info!("card: {}", defmt::Debug2Format(&card_type));
 
     let volume_manager = VolumeManager::new(sd_card, FixedTime);
     let volume = volume_manager.open_volume(VolumeIdx(0)).unwrap();
     let root = volume.open_root_dir().unwrap();
 
-    rprintln!("/");
+    defmt::info!("/");
     root.iterate_dir(|entry| {
-        rprintln!("  {:12} {:9} {}", entry.name, entry.size, entry.mtime);
+        defmt::info!(
+            "  {} {} {}",
+            defmt::Display2Format(&entry.name),
+            entry.size,
+            defmt::Display2Format(&entry.mtime)
+        );
         ControlFlow::Continue(())
     })
     .unwrap();
@@ -111,15 +115,15 @@ fn main() -> ! {
     file.close().unwrap();
 
     let file = root.open_file_in_dir(FILE_NAME, Mode::ReadOnly).unwrap();
-    rprintln!("{} ({} bytes):", FILE_NAME, file.length());
+    defmt::info!("{} ({} bytes):", FILE_NAME, file.length());
     let mut buf = [0u8; 64];
     while !file.is_eof() {
         let len = file.read(&mut buf).unwrap();
-        rprint!("{}", core::str::from_utf8(&buf[..len]).unwrap_or("?"));
+        defmt::info!("{=str}", core::str::from_utf8(&buf[..len]).unwrap_or("?"));
     }
     file.close().unwrap();
 
-    rprintln!("done");
+    defmt::info!("done");
     loop {
         cortex_m::asm::wfi();
     }

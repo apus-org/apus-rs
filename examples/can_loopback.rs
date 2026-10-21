@@ -2,9 +2,9 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+use defmt_rtt as _;
 use nb::block;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use panic_probe as _;
 
 use apus::board::{resources::Resources, RGB_PWM_FREQUENCY};
 use apus::bsp::{delay::BusyDelay, leds::Leds};
@@ -32,8 +32,7 @@ const PERIOD_MS: u32 = 1000;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: can_loopback");
+    defmt::info!("APUS-RS example: can_loopback");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -74,15 +73,15 @@ fn main() -> ! {
         // green on a matching frame, yellow on a mismatch, red on an overrun
         match block!(can.receive()) {
             Ok(received) if received == sent => {
-                rprintln!("received {}", counter);
+                defmt::info!("received {}", counter);
                 leds.led5.on();
             }
             Ok(received) => {
-                rprintln!("mismatch: {:?}", received);
+                defmt::error!("mismatch: {}", defmt::Debug2Format(&received));
                 leds.led4.on();
             }
             Err(_) => {
-                rprintln!("receive overrun");
+                defmt::error!("receive overrun");
                 leds.led3.on();
             }
         }

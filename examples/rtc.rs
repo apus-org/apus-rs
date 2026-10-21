@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::{resources::Resources, I2C1_FREQUENCY};
 use apus::bsp::{
@@ -17,8 +17,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: rtc");
+    defmt::info!("APUS-RS example: rtc");
 
     let p = pac::Peripherals::take().unwrap();
     let mut res = Resources::new(p);
@@ -33,10 +32,10 @@ fn main() -> ! {
         .and_hms_opt(9, 0, 0)
         .unwrap();
     if rtc.set_datetime(&datetime).is_err() {
-        rprintln!("failed to set datetime");
+        defmt::error!("failed to set datetime");
     }
     if rtc.enable().is_err() {
-        rprintln!("failed to start oscillator");
+        defmt::error!("failed to start oscillator");
     }
 
     let sys_clock_hz = res.rcc.clocks.sysclk().0;
@@ -44,8 +43,8 @@ fn main() -> ! {
 
     loop {
         match rtc.datetime() {
-            Ok(dt) => rprintln!("{}", dt),
-            Err(_) => rprintln!("rtc read error"),
+            Ok(dt) => defmt::info!("{}", defmt::Display2Format(&dt)),
+            Err(_) => defmt::error!("rtc read error"),
         }
         delay.delay_ms(1000);
     }

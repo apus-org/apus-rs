@@ -2,8 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt_rtt as _;
+use panic_probe as _;
 
 use apus::board::Board;
 use apus::prelude::*;
@@ -12,8 +12,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("APUS-RS example: board");
+    defmt::info!("APUS-RS example: board");
 
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);

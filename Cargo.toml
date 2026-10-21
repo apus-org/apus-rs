@@ -15,6 +15,9 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = "z"
 
+[profile.release]
+debug = 2
+
 [dependencies]
 cortex-m = { version = "0.7.7" }
 stm32f0xx-hal = { git = "https://github.com/stm32-rs/stm32f0xx-hal.git", features = [
@@ -41,11 +44,12 @@ stm32f0xx-hal = { git = "https://github.com/jakobjung10/stm32f0xx-hal.git", bran
 # interrupt handlers in the examples
 stm32f0xx-hal = { git = "https://github.com/stm32-rs/stm32f0xx-hal.git", features = ["rt"] }
 cortex-m-rt = "0.7.5"
+defmt = "1.0"
+defmt-rtt = "1.0"
 heapless = "0.9.3"
 nb = "1.1.0"
+panic-probe = { version = "1.0", features = ["print-defmt"] }
 panic-halt = "1.0.0"
-panic-rtt-target = "0.2.0"
-rtt-target = "0.6.2"
 # usbd-hid-macros 0.6 accepts any usbd-hid-descriptors, but only 0.1 compiles with it:
 # Cargo.lock pins it (cargo update -p usbd-hid-descriptors --precise 0.1.2)
 usbd-hid = "0.6.1"
