@@ -24,3 +24,20 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --lib --examples --locked -- -D warnings
       - run: cargo build --release --examples --locked
+
+  template:
+    name: template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv6m-none-eabi
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-generate
+      - run: cargo generate --path template --name apus-template-test --destination "$RUNNER_TEMP" --vcs none
+      - working-directory: ${{ runner.temp }}/apus-template-test
+        run: |
+          sed -i "s|^apus = .*|apus = { path = \"$GITHUB_WORKSPACE\" }|" Cargo.toml
+          cargo build --release
