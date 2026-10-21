@@ -7,29 +7,26 @@ STM32F072VBT6 (Arm Cortex-M0, 128 KB flash / 16 KB RAM).
 
 ![APUS board](docs/img/apus-board.png)
 
-## Peripherals
+## Overview
 
-```mermaid
-block-beta
-  columns 3
-  Leds["Leds"] Buttons["Buttons"] Display["Display"]
-  Temperature["Temperature"] Board["APUS-RS"] RTC["RTC"]
-  Buzzer["Buzzer"] Touchscreen["Touchscreen"] Potentiometer["Potentiometer"]
+![Overview](docs/img/overview/overview.svg)
 
-  Board --- Leds
-  Board --- Buttons
-  Board --- Display
-  Board --- Temperature
-  Board --- RTC
-  Board --- Buzzer
-  Board --- Touchscreen
-  Board --- Potentiometer
-
-  classDef green fill:#000000,stroke:#ffffff,color:#ffffff
-  classDef hub fill:#5e8036,stroke:#ffffff,color:#ffffff
-  class Leds,Buttons,Display,Buzzer,Touchscreen,Potentiometer,Temperature,RTC green
-  class Board hub
-```
+| Subsystem | Part | Interface | Code | Examples |
+|-----------|------|-----------|------|----------|
+| Display | ST7789, 240×320 | 8080 parallel | [bsp/display](src/bsp/display/) | [display](examples/display.rs) |
+| Touch | TSC2046 | SPI | [bsp/touch](src/bsp/touch/) | [touch_paint](examples/touch_paint.rs), [touch_theremin](examples/touch_theremin.rs), [touch_calibrate_store](examples/touch_calibrate_store.rs), [touch_calibrate_restore](examples/touch_calibrate_restore.rs) |
+| LEDs | LED3–LED5, RGB LED | GPIO, PWM | [bsp/leds](src/bsp/leds/) | [leds](examples/leds.rs), [led_rgb](examples/led_rgb.rs) |
+| Buttons | wake-up, user 0, user 1 | GPIO | [bsp/buttons](src/bsp/buttons/) | [buttons](examples/buttons.rs) |
+| Buzzer | buzzer | GPIO | [bsp/buzzer](src/bsp/buzzer/) | [buzzer](examples/buzzer.rs) |
+| Potentiometer | potentiometer | ADC | [bsp/potentiometer](src/bsp/potentiometer/) | [potentiometer](examples/potentiometer.rs) |
+| Temperature | MCP9803 | I2C | [bsp/temperature](src/bsp/temperature/) | [temperature](examples/temperature.rs) |
+| RTC | MCP79410 | I2C | [bsp/rtc](src/bsp/rtc/) | [rtc](examples/rtc.rs) |
+| VCOM | FTDI USB-UART | UART | [bsp/vcom](src/bsp/vcom/) | [vcom_echo](examples/vcom_echo.rs) |
+| UART | UART connector | UART | [peripherals/serial](src/peripherals/serial/) | [uart_echo](examples/uart_echo.rs) |
+| CAN | SN65HVD230 | CAN | [peripherals/can](src/peripherals/can/) | [can_loopback](examples/can_loopback.rs) |
+| USB | USB device | USB | [peripherals/usb](src/peripherals/usb/) | [usb_serial](examples/usb_serial.rs), [usb_trackpad](examples/usb_trackpad.rs) |
+| SWD | debug port | SWD | [peripherals/swd](src/peripherals/swd/) | – |
+| Arduino header | shields | SPI, UART, ADC, GPIO | [board/resources.rs](src/board/resources.rs) | [header_uart_echo](examples/header_uart_echo.rs), [shield_ethernet_udp_echo](examples/shield_ethernet_udp_echo.rs), [shield_ethernet_sd_card](examples/shield_ethernet_sd_card.rs) |
 
 ## Quick start
 
