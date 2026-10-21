@@ -10,7 +10,7 @@ use crate::{
     bsp::{
         buttons::ButtonPins,
         display::DisplayPins,
-        leds::{LedPins, RgbPins},
+        leds::{rgb_led::RgbPins, LedPins},
         touch::TouchPins,
         vcom::VcomFlowControlPins,
     },
