@@ -3,7 +3,7 @@
 Rust board-support crate for the **APUS board** — a development board built around the
 STM32F072VBT6 (Arm Cortex-M0, 128 KB flash / 16 KB RAM).
 
-[![CI](https://github.com/jakobjung10/apus-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/jakobjung10/apus-rs/actions/workflows/ci.yml)
+[![CI](https://github.com/apus-org/apus-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/apus-org/apus-rs/actions/workflows/ci.yml)
 
 ![APUS board](docs/img/apus-board.png)
 
@@ -30,18 +30,33 @@ STM32F072VBT6 (Arm Cortex-M0, 128 KB flash / 16 KB RAM).
 
 ## Quick start
 
+Generate a project from the [template](template/) and run it:
+
+```bash
+cargo install cargo-generate
+cargo generate --git https://github.com/apus-org/apus-rs template --name my-app
+cd my-app
+cargo run --release
+```
+
+The generated `src/main.rs` blinks LED3:
+
 ```rust
 #![no_std]
 #![no_main]
 
-use apus::board::Board;
-use apus::prelude::*;
 use cortex_m_rt::entry;
-use panic_halt as _;
-use stm32f0xx_hal::pac;
+use defmt_rtt as _;
+use panic_probe as _;
+
+use apus::board::Board;
+use apus::hal::pac;
+use apus::prelude::*;
 
 #[entry]
 fn main() -> ! {
+    defmt::info!("my-app");
+
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);
 
@@ -67,9 +82,9 @@ cargo run --example leds
 
 | Path | Contents |
 |------|----------|
-| [src/board.rs](src/board.rs) | the `Board` type that brings up all peripherals |
-| [src/bsp/](src/bsp/) | per-peripheral drivers (leds, buttons, display, touch, …) |
-| [src/peripherals/](src/peripherals/) | lower-level bus/peripheral setup (i2c, spi, adc) |
+| [src/board/](src/board/) | `Board` (everything configured) and `Resources` (everything unconfigured) |
+| [src/bsp/](src/bsp/) | per-part drivers (leds, buttons, display, touch, …) |
+| [src/peripherals/](src/peripherals/) | lower-level peripheral setup (can, i2c, serial, spi, swd, usb) |
 | [examples/](examples/) | runnable per-peripheral demos |
 
 ## Setup

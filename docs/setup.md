@@ -46,5 +46,6 @@ the STM32F072VB [datasheet](https://www.st.com/resource/en/datasheet/stm32f072vb
 
 ## Hardware reference
 
-- MCU: [STM32F072VB](https://www.st.com/en/microcontrollers-microprocessors/stm32f072vb.html) — Arm Cortex-M0, Armv6-M
+- MCU: [STM32F072VB](https://www.st.com/en/microcontrollers-microprocessors/stm32f072vb.html)
+- Core: [Cortex-M0 Devices Generic User Guide](https://documentation-service.arm.com/static/5ea6ce5e9931941038def8c1)
 - Rust target: [thumbv6m-none-eabi](https://doc.rust-lang.org/rustc/platform-support/thumbv6m-none-eabi.html)
