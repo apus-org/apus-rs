@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "preLaunchTask": "build debug",
+            "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/{{project-name}}",
+                    "rttEnabled": true,
+                    "svdFile": "${workspaceFolder}/device/STM32F0x2.svd"
+                }
+            ]
+        },
+        {
+            "name": "Release",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "preLaunchTask": "build release",
+            "chip": "STM32F072VBTx",
+            "flashingConfig": {
+                "flashingEnabled": true
+            },
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/release/{{project-name}}",
+                    "rttEnabled": true,
+                    "svdFile": "${workspaceFolder}/device/STM32F0x2.svd"
+                }
+            ]
+        }
+    ]
+}

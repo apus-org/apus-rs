@@ -1,0 +1,25 @@
+[package]
+name = "{{project-name}}"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+apus = { git = "https://github.com/apus-org/apus-rs" }
+cortex-m-rt = "0.7.5"
+defmt = "1.0"
+defmt-rtt = "1.0"
+panic-probe = { version = "1.0", features = ["print-defmt"] }
+
+# eh-1.0 I2C impl pending upstream
+[patch."https://github.com/stm32-rs/stm32f0xx-hal.git"]
+stm32f0xx-hal = { git = "https://github.com/jakobjung10/stm32f0xx-hal.git", branch = "i2c-eh1" }
+
+[profile.dev]
+opt-level = 1
+
+# dependencies: optimization for size
+[profile.dev.package."*"]
+opt-level = "z"
+
+[profile.release]
+debug = 2

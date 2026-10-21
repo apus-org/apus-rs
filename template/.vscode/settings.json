@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.check.allTargets": false,
+    "rust-analyzer.check.extraArgs": ["--bins"],
+    "rust-analyzer.cargo.target": "thumbv6m-none-eabi",
+    "lldb.displayFormat": "auto",
+    "lldb.dereferencePointers": true,
+    "lldb.consoleMode": "commands",
+}

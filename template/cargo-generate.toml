@@ -1,0 +1,3 @@
+[template]
+cargo_generate_version = ">=0.17"
+exclude = ["device/STM32F0x2.svd"]
