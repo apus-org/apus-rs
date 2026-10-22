@@ -22,8 +22,8 @@ pub struct I2c1Pins {
 /// Initialize I2C1 with PB6 (SCL) and PB7 (SDA) at `frequency`.
 pub fn init(i2c1: pac::I2C1, pins: I2c1Pins, frequency: KiloHertz, rcc: &mut rcc::Rcc) -> I2c1 {
     let (scl, sda) = interrupt::free(|cs| {
-        let scl = pins.scl.into_alternate_af1(cs);
-        let sda = pins.sda.into_alternate_af1(cs);
+        let scl = pins.scl.into_alternate_af1(cs).set_open_drain(cs);
+        let sda = pins.sda.into_alternate_af1(cs).set_open_drain(cs);
         (scl, sda)
     });
 
