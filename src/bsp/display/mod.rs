@@ -41,20 +41,21 @@ pub struct DisplayPins {
 /// Initialize the ST7789 display
 pub fn init(pins: DisplayPins, mut delay_source: impl DelayNs) -> ApusDisplay {
     let (data_interface, n_reset) = interrupt::free(|cs| {
+        // the data lines, D/C and WR toggle at bus speed, beyond what low-speed outputs drive
         let data = DataPins {
-            db0: pins.db0.into_push_pull_output(cs),
-            db1: pins.db1.into_push_pull_output(cs),
-            db2: pins.db2.into_push_pull_output(cs),
-            db3: pins.db3.into_push_pull_output(cs),
-            db4: pins.db4.into_push_pull_output(cs),
-            db5: pins.db5.into_push_pull_output(cs),
-            db6: pins.db6.into_push_pull_output(cs),
-            db7: pins.db7.into_push_pull_output(cs),
+            db0: pins.db0.into_push_pull_output_hs(cs),
+            db1: pins.db1.into_push_pull_output_hs(cs),
+            db2: pins.db2.into_push_pull_output_hs(cs),
+            db3: pins.db3.into_push_pull_output_hs(cs),
+            db4: pins.db4.into_push_pull_output_hs(cs),
+            db5: pins.db5.into_push_pull_output_hs(cs),
+            db6: pins.db6.into_push_pull_output_hs(cs),
+            db7: pins.db7.into_push_pull_output_hs(cs),
         };
 
         let mut n_cs = pins.n_cs.into_push_pull_output(cs);
-        let d_c = pins.d_c.into_push_pull_output(cs);
-        let mut n_wr = pins.n_wr.into_push_pull_output(cs);
+        let d_c = pins.d_c.into_push_pull_output_hs(cs);
+        let mut n_wr = pins.n_wr.into_push_pull_output_hs(cs);
         let mut n_rd = pins.n_rd.into_push_pull_output(cs);
         let n_reset = pins.n_reset.into_push_pull_output(cs);
 
