@@ -82,10 +82,11 @@ cargo run --example leds
 
 | Path | Contents |
 |------|----------|
-| [src/board/](src/board/) | `Board` (everything configured) and `Resources` (everything unconfigured) |
-| [src/bsp/](src/bsp/) | per-part drivers (leds, buttons, display, touch, …) |
-| [src/peripherals/](src/peripherals/) | lower-level peripheral setup (can, i2c, serial, spi, swd, usb) |
-| [examples/](examples/) | runnable per-peripheral demos |
+| [src/](src/) | source code |
+| [examples/](examples/) | runnable demos per subsystem |
+| [template/](template/) | project template for `cargo generate` |
+| [docs/](docs/) | documentation |
+| [device/](device/) | device description |
 
 ## Setup
 
