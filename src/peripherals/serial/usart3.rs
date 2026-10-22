@@ -22,7 +22,8 @@ pub struct Usart3Pins {
 pub fn init(usart3: pac::USART3, pins: Usart3Pins, baud_rate: Bps, rcc: &mut rcc::Rcc) -> Usart3 {
     let (tx, rx) = interrupt::free(|cs| {
         let tx = pins.tx.into_alternate_af0(cs);
-        let rx = pins.rx.into_alternate_af0(cs);
+        // the FTDI only drives the line while the VCOM cable is plugged in; idle high instead of a break
+        let rx = pins.rx.into_alternate_af0(cs).internal_pull_up(cs, true);
         (tx, rx)
     });
 

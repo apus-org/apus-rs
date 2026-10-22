@@ -22,7 +22,8 @@ pub struct Usart1Pins {
 pub fn init(usart1: pac::USART1, pins: Usart1Pins, baud_rate: Bps, rcc: &mut rcc::Rcc) -> Usart1 {
     let (tx, rx) = interrupt::free(|cs| {
         let tx = pins.tx.into_alternate_af1(cs);
-        let rx = pins.rx.into_alternate_af1(cs);
+        // without a shield the header pin floats; idle high keeps noise from reading as start bits
+        let rx = pins.rx.into_alternate_af1(cs).internal_pull_up(cs, true);
         (tx, rx)
     });
 

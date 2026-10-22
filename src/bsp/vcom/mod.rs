@@ -1,6 +1,6 @@
 use cortex_m::interrupt;
 use stm32f0xx_hal::{
-    gpio::{gpiod, Floating, Input, Output, PushPull},
+    gpio::{gpiod, Floating, Input, Output, PullUp, PushPull},
     prelude::_embedded_hal_gpio_OutputPin,
 };
 
@@ -9,8 +9,9 @@ use crate::peripherals::serial::usart3::Usart3;
 /// Ready to receive, to the FTDI's CTS# (FTDI_CTS net); low lets the PC send
 pub type VcomRts = gpiod::PD11<Output<PushPull>>;
 
-/// The PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net); low means ready
-pub type VcomCts = gpiod::PD12<Input<Floating>>;
+/// The PC's ready to receive, from the FTDI's RTS# (FTDI_RTS net); low means ready, and the pull-up
+/// reads not ready while the VCOM cable is unplugged
+pub type VcomCts = gpiod::PD12<Input<PullUp>>;
 
 /// Flow-control lines of the VCOM port, unconfigured
 pub struct VcomFlowControlPins {
@@ -32,7 +33,7 @@ impl Vcom {
         let (mut rts, cts) = interrupt::free(|cs| {
             (
                 pins.rts.into_push_pull_output(cs),
-                pins.cts.into_floating_input(cs),
+                pins.cts.into_pull_up_input(cs),
             )
         });
         let _ = rts.set_low();
