@@ -95,7 +95,7 @@
                 "full_demo",
                 "header_dac_adc",
                 "header_spi_loopback",
-                "header_uart_echo",
+                "header_uart_loopback",
                 "led_rgb",
                 "leds",
                 "potentiometer",

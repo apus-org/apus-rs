@@ -26,7 +26,7 @@ STM32F072VBT6 (Arm Cortex-M0, 128 KB flash / 16 KB RAM).
 | CAN | SN65HVD230 | CAN | [peripherals/can](src/peripherals/can/) | [can_loopback](examples/can_loopback.rs) |
 | USB | USB device | USB | [peripherals/usb](src/peripherals/usb/) | [usb_serial](examples/usb_serial.rs), [usb_trackpad](examples/usb_trackpad.rs) |
 | SWD | debug port | SWD | [peripherals/swd](src/peripherals/swd/) | – |
-| Arduino header | shields | SPI, UART, ADC, DAC, GPIO | [board/resources.rs](src/board/resources.rs) | [header_spi_loopback](examples/header_spi_loopback.rs), [header_uart_echo](examples/header_uart_echo.rs), [header_dac_adc](examples/header_dac_adc.rs), [shield_ethernet_udp_echo](examples/shield_ethernet_udp_echo.rs), [shield_ethernet_sd_card](examples/shield_ethernet_sd_card.rs) |
+| Arduino header | shields | SPI, UART, ADC, DAC, GPIO | [board/resources.rs](src/board/resources.rs) | [header_spi_loopback](examples/header_spi_loopback.rs), [header_uart_loopback](examples/header_uart_loopback.rs), [header_dac_adc](examples/header_dac_adc.rs), [shield_ethernet_udp_echo](examples/shield_ethernet_udp_echo.rs), [shield_ethernet_sd_card](examples/shield_ethernet_sd_card.rs) |
 
 ## Quick start
 
