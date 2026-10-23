@@ -93,6 +93,7 @@
                 "can_loopback",
                 "display",
                 "full_demo",
+                "header_dac_adc",
                 "header_spi_loopback",
                 "header_uart_echo",
                 "led_rgb",
