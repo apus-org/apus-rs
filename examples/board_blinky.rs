@@ -12,7 +12,7 @@ use apus::hal::pac;
 
 #[entry]
 fn main() -> ! {
-    defmt::info!("APUS-RS example: board");
+    defmt::info!("APUS-RS example: board_blinky");
 
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);

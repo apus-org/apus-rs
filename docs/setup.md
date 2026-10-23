@@ -31,7 +31,7 @@ runner, and linker flags are preconfigured in [.cargo/config.toml](../.cargo/con
 so flashing and running an example is just:
 
 ```bash
-cargo run --example board
+cargo run --example board_blinky
 ```
 
 ## 3. Linker script

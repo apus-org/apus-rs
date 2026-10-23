@@ -87,12 +87,12 @@
             "id": "exampleName",
             "type": "pickString",
             "options": [
-                "board",
+                "board_blinky",
+                "board_demo",
                 "buttons",
                 "buzzer",
                 "can_loopback",
                 "display",
-                "full_demo",
                 "header_dac_adc",
                 "header_spi_loopback",
                 "header_uart_loopback",
@@ -113,13 +113,13 @@
                 "vcom_echo"
             ],
             "description": "Choose Example",
-            "default": "full_demo"
+            "default": "board_demo"
         },
         {
             "id": "anyExampleName",
             "type": "promptString",
             "description": "Enter any Example Name",
-            "default": "full_demo"
+            "default": "board_demo"
         },
     ]
 }

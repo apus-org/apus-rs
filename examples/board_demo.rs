@@ -37,7 +37,7 @@ const SENSOR_PERIOD_TICKS: u32 = 20;
 
 #[entry]
 fn main() -> ! {
-    defmt::info!("APUS-RS example: full_demo");
+    defmt::info!("APUS-RS example: board_demo");
 
     let p = pac::Peripherals::take().unwrap();
     let mut board = Board::new(p);
