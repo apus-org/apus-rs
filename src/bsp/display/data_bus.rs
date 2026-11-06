@@ -99,8 +99,18 @@ impl Interface for DataBus {
         pixels: impl IntoIterator<Item = [u8; N]>,
     ) -> Result<(), Infallible> {
         for pixel in pixels {
-            for byte in pixel {
-                write(byte_with_wr_low(byte));
+            match pixel[..] {
+                // RGB565, written out: opt-level "s" and "z" do not unroll the loop below
+                [high, low] => {
+                    write(byte_with_wr_low(high));
+                    write(byte_with_wr_low(low));
+                }
+                // RGB666
+                _ => {
+                    for byte in pixel {
+                        write(byte_with_wr_low(byte));
+                    }
+                }
             }
         }
 
@@ -114,9 +124,21 @@ impl Interface for DataBus {
     ) -> Result<(), Infallible> {
         let words = pixel.map(byte_with_wr_low);
 
-        for _ in 0..count {
-            for word in words {
-                write(word);
+        match words[..] {
+            // RGB565, written out: opt-level "s" and "z" keep `words` on the stack in the loop below
+            [high, low] => {
+                for _ in 0..count {
+                    write(high);
+                    write(low);
+                }
+            }
+            // RGB666
+            _ => {
+                for _ in 0..count {
+                    for word in words {
+                        write(word);
+                    }
+                }
             }
         }
 
