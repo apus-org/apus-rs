@@ -82,6 +82,7 @@ impl Interface for DataBus {
 
     const KIND: InterfaceKind = InterfaceKind::Parallel8Bit;
 
+    #[inline]
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Infallible> {
         bsrr(reset(D_C));
         write(byte_with_wr_low(command));
@@ -94,6 +95,7 @@ impl Interface for DataBus {
         Ok(())
     }
 
+    #[inline]
     fn send_pixels<const N: usize>(
         &mut self,
         pixels: impl IntoIterator<Item = [u8; N]>,
@@ -117,6 +119,7 @@ impl Interface for DataBus {
         Ok(())
     }
 
+    #[inline]
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [u8; N],
